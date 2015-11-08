@@ -16,7 +16,7 @@ namespace Minet.Compiler
 		Number,             // a literal number
 		Identifier,         // an identifier
 		keyword_start,
-		Namespace,			// 'ns'
+		Namespace,          // 'ns'
 		Use,                // 'use'
 		As,                 // 'as'
 		If,                 // 'if'
@@ -83,32 +83,39 @@ namespace Minet.Compiler
 
 	public static class TokenHelper
 	{
-		public static bool IsKeyword(TokenType type)
+		public static bool IsKeyword(this TokenType type)
 		{
 			return type > TokenType.keyword_start && type < TokenType.keyword_end;
 		}
 
-		public static bool IsUnaryOp(TokenType type)
+		public static bool IsUnaryOp(this TokenType type)
 		{
 			return type > TokenType.unary_op_start && type < TokenType.unary_op_end;
 		}
 
-		public static bool IsAssign(TokenType type)
+		public static bool IsAssign(this TokenType type)
 		{
 			return type > TokenType.assign_start && type < TokenType.assign_end;
 		}
 
-		public static bool IsType(TokenType type)
+		public static bool IsType(this TokenType type)
 		{
 			return type == TokenType.Identifier || type == TokenType.Function || type == TokenType.Array;
 		}
 
-		public static bool IsInBlock(TokenType type)
+		public static bool IsInBlock(this TokenType type)
 		{
 			return type == TokenType.Comma || type == TokenType.RightParen;
 		}
+	}
 
-		public static Dictionary<string, TokenType> Keywords = new Dictionary<string, TokenType>
+	public class Token
+	{
+		public TokenType Type;
+		public Position Pos;
+		public string Val;
+
+		public readonly static Dictionary<string, TokenType> Keywords = new Dictionary<string, TokenType>
 		{
 			{"ns",      TokenType.Namespace},
 			{"use",     TokenType.Use},
@@ -168,13 +175,6 @@ namespace Minet.Compiler
 			{"^",       TokenType.BXOr},
 			{"!",       TokenType.Not}
 		};
-	}
-
-	public class Token
-	{
-		public TokenType Type;
-		public Position Pos;
-		public string Val;
 
 		public override string ToString()
 		{

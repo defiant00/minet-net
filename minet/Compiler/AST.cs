@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Minet.Compiler.AST
 {
@@ -26,7 +28,6 @@ namespace Minet.Compiler.AST
 	{
 		public Statement Type;
 		public Expression Size;
-		public override string ToString() { return "cons []" + Type; }
 	}
 
 	public class ArrayValueList : Expression
@@ -45,8 +46,6 @@ namespace Minet.Compiler.AST
 		public Expression Left, Right;
 		public TokenType Op;
 	}
-
-	public class Blank : Expression { }
 
 	public class Bool : Expression
 	{
@@ -78,11 +77,6 @@ namespace Minet.Compiler.AST
 		public List<Statement> Params = new List<Statement>();
 	}
 
-	public class Defer : Statement
-	{
-		public Expression Expr;
-	}
-
 	public class Error : Expression, Statement
 	{
 		public string Val;
@@ -98,7 +92,7 @@ namespace Minet.Compiler.AST
 		public Expression Expr;
 	}
 
-	public class File : General
+	public class File : Statement
 	{
 		public string Name;
 		public List<Statement> Statements = new List<Statement>();
@@ -130,69 +124,35 @@ namespace Minet.Compiler.AST
 	{
 		public List<Statement> Params = new List<Statement>();
 		public List<Statement> Returns = new List<Statement>();
-
 		public override string ToString()
 		{
-			string rVal = "fn(";
-			/*
-			ret := "fn("
-			for i, p := range this.params {
-				if i > 0 {
-					ret += ", "
-				}
-				ret += fmt.Sprint(p)
+			var sb = new StringBuilder("fn(");
+			sb.Append(string.Join(", ", Params));
+			sb.Append(")");
+			if (Returns.Count > 0)
+			{
+				sb.Append(" ");
+				if (Returns.Count > 1) { sb.Append("("); }
+				sb.Append(string.Join(", ", Returns));
+				if (Returns.Count > 1) { sb.Append(")"); }
 			}
-			ret += ")"
-			if len(this.returns) > 0 {
-				ret += " "
-				if len(this.returns) > 1 {
-					ret += "("
-				}
-				for i, r := range this.returns {
-					if i > 0 {
-						ret += ", "
-					}
-					ret += fmt.Sprint(r)
-				}
-				if len(this.returns) > 1 {
-					ret += ")"
-				}
-			}
-			return ret
-			*/
-			return rVal;
+			return sb.ToString();
 		}
 	}
 
-	public class Identifier : Expression
+	public class Identifier : Expression, Statement
 	{
 		public List<IdentPart> Idents = new List<IdentPart>();
+		public override string ToString() { return string.Join(".", Idents); }
 	}
 
 	public class IdentPart
 	{
 		public string Name;
 		public List<Statement> TypeParams = new List<Statement>();
-
 		public override string ToString()
 		{
-			/*
-			ret := this.Name
-			if len(this.typeParams) > 0 {
-				ret += "<"
-			}
-			for i, tp := range this.typeParams {
-				if i > 0 {
-					ret += ", "
-				}
-				ret += fmt.Sprint(tp)
-			}
-			if len(this.typeParams) > 0 {
-				ret += ">"
-			}
-			return ret
-			*/
-			return "not yet";
+			return TypeParams.Count > 0 ? Name + "<" + string.Join(", ", TypeParams) + ">" : Name;
 		}
 	}
 
@@ -215,37 +175,6 @@ namespace Minet.Compiler.AST
 		public string Name;
 		public List<Statement> Params = new List<Statement>();
 		public List<Statement> Returns = new List<Statement>();
-
-		public override string ToString()
-		{
-			/*
-			ret := this.Name + "("
-			for i, p := range this.params {
-				if i > 0 {
-					ret += ", "
-				}
-				ret += fmt.Sprint(p)
-			}
-			ret += ")"
-			if len(this.returns) > 0 {
-				ret += " "
-				if len(this.returns) > 1 {
-					ret += "("
-				}
-				for i, r := range this.returns {
-					if i > 0 {
-						ret += ", "
-					}
-					ret += fmt.Sprint(r)
-				}
-				if len(this.returns) > 1 {
-					ret += ")"
-				}
-			}
-			return ret
-			*/
-			return "not yet";
-		}
 	}
 
 	public class Iota : Expression, Statement { }
@@ -268,6 +197,11 @@ namespace Minet.Compiler.AST
 		public List<Statement> Statements = new List<Statement>();
 	}
 
+	public class Namespace : Statement
+	{
+		public Identifier Name;
+	}
+
 	public class Number : Expression
 	{
 		public string Val;
@@ -277,7 +211,6 @@ namespace Minet.Compiler.AST
 	{
 		public string Name;
 		public Statement Type;
-		public override string ToString() { return Type == null ? Name : Name + " " + Type; }
 	}
 
 	public class Property
@@ -285,17 +218,6 @@ namespace Minet.Compiler.AST
 		public bool Static;
 		public string Name;
 		public Statement Type;
-
-		public override string ToString()
-		{
-			string rVal = Static ? "static " : "";
-			rVal += Name;
-			if (Type != null)
-			{
-				rVal += " " + Type;
-			}
-			return rVal;
-		}
 	}
 
 	public class PropertySet : Statement
@@ -320,33 +242,6 @@ namespace Minet.Compiler.AST
 		public string Alias;
 	}
 
-	public class TypeIdent : Statement
-	{
-		public List<string> Idents = new List<string>();
-		public List<Statement> TypeParams = new List<Statement>();
-
-		public override string ToString()
-		{
-			/*
-			ret := strings.Join(this.idents, ".")
-			if len(this.typeParams) > 0 {
-				ret += "<"
-			}
-			for i, t := range this.typeParams {
-				if i > 0 {
-					ret += ", "
-				}
-				ret += fmt.Sprint(t)
-			}
-			if len(this.typeParams) > 0 {
-				ret += ">"
-			}
-			return ret
-			*/
-			return "not yet";
-		}
-	}
-
 	public class Unary : Expression
 	{
 		public Expression Expr;
@@ -358,17 +253,16 @@ namespace Minet.Compiler.AST
 		public List<UsePackage> Packages = new List<UsePackage>();
 	}
 
-	public class UsePackage
+	public class UsePackage : Statement
 	{
-		public string Pack, Alias;
-		public override string ToString() { return string.IsNullOrEmpty(Alias) ? Pack : Pack + " as " + Alias; }
+		public Identifier Pack;
+		public string Alias;
 	}
 
 	public class Variable
 	{
 		public string Name;
 		public Statement Type;
-		public override string ToString() { return Type == null ? Name : Name + " " + Type; }
 	}
 
 	public class VarSet : Statement

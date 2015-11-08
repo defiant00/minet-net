@@ -204,7 +204,7 @@ namespace Minet.Compiler
 		{
 			for (var c = peek(); char.IsLetterOrDigit(c) || c == '_'; c = peek()) { next(); }
 			TokenType t;
-			bool found = TokenHelper.Keywords.TryGetValue(current, out t);
+			bool found = Token.Keywords.TryGetValue(current, out t);
 			if (!found) { t = TokenType.Identifier; }
 			emit(t);
 			return lexStatement;
@@ -224,11 +224,11 @@ namespace Minet.Compiler
 			acceptRun(operatorChars);
 			int p = pos;
 			TokenType t;
-			bool found = TokenHelper.Keywords.TryGetValue(current, out t);
+			bool found = Token.Keywords.TryGetValue(current, out t);
 			while (!found && pos > start)
 			{
 				backup();
-				found = TokenHelper.Keywords.TryGetValue(current, out t);
+				found = Token.Keywords.TryGetValue(current, out t);
 			}
 			if (pos > start)
 			{

@@ -16,7 +16,7 @@ namespace Minet.Compiler
 				if (printAST)
 				{
 					Console.WriteLine(Environment.NewLine + Environment.NewLine + "AST");
-					// ast.Print(fAST, 1)
+					AST.Printer.Print(fAST.Result as dynamic, 1);
 				}
 			}
 		}
