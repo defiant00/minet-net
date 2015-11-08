@@ -1,0 +1,7 @@
+ns Minet.Test
+
+use System
+
+minetTest
+	main()
+		Console.WriteLine("hello from minet")
