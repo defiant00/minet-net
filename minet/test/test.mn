@@ -1,8 +1,7 @@
 ns Minet.Test
 
 use System
-	System.Windows.Forms as f
 
-;minetTest
-;	main()
-;		Console.WriteLine("hello from minet")
+minetTest
+	main(args []string)
+		ret 0
