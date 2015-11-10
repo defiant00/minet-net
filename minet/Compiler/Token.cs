@@ -32,7 +32,6 @@ namespace Minet.Compiler
 		For,                // 'for'
 		Loop,               // 'loop'
 		Break,              // 'break'
-		Iota,               // 'iota'
 		True,               // 'true'
 		False,              // 'false'
 		Equal,              // '=='
@@ -130,7 +129,6 @@ namespace Minet.Compiler
 			{"for",     TokenType.For},
 			{"loop",    TokenType.Loop},
 			{"break",   TokenType.Break},
-			{"iota",    TokenType.Iota},
 			{"true",    TokenType.True},
 			{"false",   TokenType.False},
 			{"==",      TokenType.Equal},

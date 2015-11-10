@@ -6,6 +6,8 @@ namespace Minet.Compiler
 	{
 		const char eof = '\0';
 		const string operatorChars = "()[]<>{}!=+-*/%,.:&|^";
+		const string commentStart = "/;";
+		const string commentEnd = ";/";
 
 		delegate stateFn stateFn();
 
@@ -38,6 +40,16 @@ namespace Minet.Compiler
 
 		private string current { get { return input.Substring(start, (pos - start)); } }
 
+		private bool currentPosStartsWith(string str)
+		{
+			if (pos + str.Length > input.Length) { return false; }
+			for (int i = 0; i < str.Length; i++)
+			{
+				if (input[i + pos] != str[i]) { return false; }
+			}
+			return true;
+		}
+
 		public Lexer(string input)
 		{
 			this.input = input;
@@ -66,11 +78,14 @@ namespace Minet.Compiler
 			return input[pos++];
 		}
 
-		private char peek()
+		private char peek
 		{
-			char c = next();
-			backup();
-			return c;
+			get
+			{
+				char c = next();
+				backup();
+				return c;
+			}
 		}
 
 		private void backup() { pos -= widths.Pop(); }
@@ -126,6 +141,11 @@ namespace Minet.Compiler
 			int indent = 0;
 			while (true)
 			{
+				if (currentPosStartsWith(commentStart))
+				{
+					discard();
+					return lexMLComment;
+				}
 				switch (next())
 				{
 					case eof:
@@ -149,7 +169,6 @@ namespace Minet.Compiler
 						discard();
 						return lexComment;
 					default:
-						inStmt = true;
 						backup();
 						discard();
 						emitIndent(indent);
@@ -162,8 +181,9 @@ namespace Minet.Compiler
 		{
 			while (true)
 			{
-				char c = peek();
-				if (c == eof)
+				char c = peek;
+				if (currentPosStartsWith(commentStart)) { return lexMLComment; }
+				else if (c == eof)
 				{
 					if (inStmt) { emit(TokenType.EOL); }
 					emitIndent(0);
@@ -182,11 +202,31 @@ namespace Minet.Compiler
 					return lexIndent;
 				}
 				else if (c == ';') { return lexComment; }
-				else if (c == '"') { return lexString; }
-				else if (c == '\'') { return lexChar; }
-				else if (char.IsLetter(c) || c == '_') { return lexIdentifier; }
-				else if (char.IsDigit(c)) { return lexNumber; }
-				else if (accept(operatorChars)) { return lexOperator; }
+				else if (c == '"')
+				{
+					inStmt = true;
+					return lexString;
+				}
+				else if (c == '\'')
+				{
+					inStmt = true;
+					return lexChar;
+				}
+				else if (char.IsLetter(c) || c == '_')
+				{
+					inStmt = true;
+					return lexIdentifier;
+				}
+				else if (char.IsDigit(c))
+				{
+					inStmt = true;
+					return lexNumber;
+				}
+				else if (accept(operatorChars))
+				{
+					inStmt = true;
+					return lexOperator;
+				}
 				else { return error("Invalid character '" + c + "' encountered."); }
 			}
 		}
@@ -195,14 +235,34 @@ namespace Minet.Compiler
 		{
 			next(); // eat the ;
 			discard();
-			for (var c = peek(); c != eof && c != '\r' && c != '\n'; c = peek()) { next(); }
+			for (var c = peek; c != eof && c != '\r' && c != '\n'; c = peek) { next(); }
 			emit(TokenType.Comment);
 			return lexStatement;
 		}
 
+		private stateFn lexMLComment()
+		{
+			next();
+			next();
+			discard(); // eat /;
+			while (peek != eof)
+			{
+				if (currentPosStartsWith(commentEnd))
+				{
+					emit(TokenType.Comment);
+					next();
+					next();
+					discard(); // eat ;/
+					return lexStatement;
+				}
+				next();
+			}
+			return error("Unclosed /;");
+		}
+
 		private stateFn lexIdentifier()
 		{
-			for (var c = peek(); char.IsLetterOrDigit(c) || c == '_'; c = peek()) { next(); }
+			for (var c = peek; char.IsLetterOrDigit(c) || c == '_'; c = peek) { next(); }
 			TokenType t;
 			bool found = Token.Keywords.TryGetValue(current, out t);
 			if (!found) { t = TokenType.Identifier; }
@@ -212,9 +272,9 @@ namespace Minet.Compiler
 
 		private stateFn lexNumber()
 		{
-			for (var c = peek(); char.IsDigit(c); c = peek()) { next(); }
+			for (var c = peek; char.IsDigit(c); c = peek) { next(); }
 			accept(".");
-			for (var c = peek(); char.IsDigit(c); c = peek()) { next(); }
+			for (var c = peek; char.IsDigit(c); c = peek) { next(); }
 			emit(TokenType.Number);
 			return lexStatement;
 		}

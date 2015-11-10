@@ -44,7 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compiler\AST.cs" />
-    <Compile Include="Compiler\Printer.cs" />
     <Compile Include="Compiler\Compiler.cs" />
     <Compile Include="Compiler\Lexer.cs" />
     <Compile Include="Compiler\Parser.cs" />
