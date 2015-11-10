@@ -31,13 +31,13 @@ Both spaces and tabs are supported; during lexing, tabs are treated as four spac
 ### Comments
 ```
 line_comment  = ";" { unicode_char } newline
-block_comment = ";;" { unicode_char | newline } ";;"
+block_comment = "/;" { unicode_char | newline } ";/"
 ```
 ```
 ; A single-line comment
-;; This is
+/; This is
 a block
-comment ;;
+comment ;/
 ```
 ### Identifiers
 ```
@@ -55,9 +55,9 @@ another_ident2
 ### Operators
 ```
 binary_op     = add_op | multiply_op | boolean_op
-boolean_op    = "==" | "!=" | ">" | "<" | ">=" | "<="
-add_op        = "+" | "-"
-multiply_op   = "*" | "/" | "%"
+boolean_op    = "==" | "!=" | "<" | "<=" | ">" | ">="
+add_op        = "+" | "-" | "|" | "^"
+multiply_op   = "*" | "/" | "%" | "&"
 assignment_op = [ add_op | multiply_op] "="
 ```
 ### Expressions
@@ -85,7 +85,7 @@ if 2 > y with y = calc(3)
 if b
     is 1, 2
         print("one or two")
-    is any
+    is _
         print("not 1 or 2")
 
 if with x = calc(7)
@@ -93,7 +93,7 @@ if with x = calc(7)
         print("greater than 3")
     is x < 1
         print("less than 1")
-    is any
+    is _
         print("in between")
 ```
 ### Loops
