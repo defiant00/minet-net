@@ -49,9 +49,6 @@ namespace Minet.Compiler
 		RightParen,         // ')'
 		LeftBracket,        // '['
 		RightBracket,       // ']'
-		Array,              // '[]'
-		LeftCurly,          // '{'
-		RightCurly,         // '}'
 		assign_start,
 		Assign,             // '='
 		AddAssign,          // '+='
@@ -94,14 +91,14 @@ namespace Minet.Compiler
 			return type > TokenType.assign_start && type < TokenType.assign_end;
 		}
 
-		public static bool IsType(this TokenType type)
-		{
-			return type == TokenType.Identifier || type == TokenType.Function || type == TokenType.Array;
-		}
-
 		public static bool IsInBlock(this TokenType type)
 		{
 			return type == TokenType.Comma || type == TokenType.RightParen;
+		}
+
+		public static bool IsDedentStop(this TokenType type)
+		{
+			return type == TokenType.Dedent || type == TokenType.EOF;
 		}
 	}
 
@@ -146,9 +143,6 @@ namespace Minet.Compiler
 			{")",       TokenType.RightParen},
 			{"[",       TokenType.LeftBracket},
 			{"]",       TokenType.RightBracket},
-			{"[]",      TokenType.Array},
-			{"{",       TokenType.LeftCurly},
-			{"}",       TokenType.RightCurly},
 			{"=",       TokenType.Assign},
 			{"+=",      TokenType.AddAssign},
 			{"-=",      TokenType.SubAssign},

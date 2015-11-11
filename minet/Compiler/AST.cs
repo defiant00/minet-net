@@ -41,7 +41,8 @@ namespace Minet.Compiler.AST
 	public class Array : Statement
 	{
 		public Statement Type;
-		public override string ToString() { return "[]" + Type; }
+		public int Dimensions;
+		public override string ToString() { return "[" + Dimensions + "]" + Type; }
 
 		public void Print(int indent)
 		{
@@ -227,7 +228,7 @@ namespace Minet.Compiler.AST
 	public class For : Statement
 	{
 		public string Label;
-		public List<string> Vars = new List<string>();
+		public List<Variable> Vars = new List<Variable>();
 		public Expression In;
 		public List<Statement> Statements = new List<Statement>();
 
@@ -263,7 +264,7 @@ namespace Minet.Compiler.AST
 	{
 		public bool Static;
 		public string Name;
-		public List<Parameter> Params = new List<Parameter>();
+		public List<Variable> Params = new List<Variable>();
 		public List<Statement> Returns = new List<Statement>();
 		public List<Statement> Statements = new List<Statement>();
 
@@ -353,7 +354,12 @@ namespace Minet.Compiler.AST
 		{
 			Helper.PrintIndent(indent);
 			Console.WriteLine("if");
-			Condition.Print(indent + 1);
+			if (Condition != null) { Condition.Print(indent + 1); }
+			else
+			{
+				Helper.PrintIndent(indent + 1);
+				Console.WriteLine("(implicit true)");
+			}
 			if (With != null)
 			{
 				Helper.PrintIndent(indent + 1);
@@ -466,19 +472,6 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public class Parameter
-	{
-		public string Name;
-		public Statement Type;
-		public override string ToString() { return Type != null ? Name + " " + Type : Name; }
-
-		public void Print(int indent)
-		{
-			Helper.PrintIndent(indent);
-			Console.WriteLine(this);
-		}
-	}
-
 	public class Property
 	{
 		public bool Static;
@@ -571,15 +564,11 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public class Variable
+	public class Variable : Statement
 	{
 		public string Name;
 		public Statement Type;
-
-		public override string ToString()
-		{
-			return Type != null ? Name + " " + Type : Name;
-		}
+		public override string ToString() { return Type != null ? Name + " " + Type : Name; }
 
 		public void Print(int indent)
 		{
@@ -596,7 +585,7 @@ namespace Minet.Compiler.AST
 		{
 			Helper.PrintIndent(indent);
 			Console.WriteLine("var set");
-			foreach(var l in Lines) { l.Print(indent + 1); }
+			foreach (var l in Lines) { l.Print(indent + 1); }
 		}
 	}
 
@@ -609,7 +598,7 @@ namespace Minet.Compiler.AST
 		{
 			Helper.PrintIndent(indent);
 			Console.WriteLine(string.Join(", ", Vars));
-			Vals.Print(indent + 1);
+			if (Vals != null) { Vals.Print(indent + 1); }
 		}
 	}
 }
