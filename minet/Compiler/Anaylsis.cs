@@ -1,5 +1,4 @@
-﻿using minet.Compiler;
-using System;
+﻿using System;
 
 namespace Minet.Compiler.AST
 {
@@ -87,8 +86,15 @@ namespace Minet.Compiler.AST
 	{
 		public void Analyze(WalkState state)
 		{
-			state.CurrentClass = this;
-			foreach (var s in Statements) { s.Analyze(state); }
+			if (string.IsNullOrEmpty(state.CurrentFile.Namespace))
+			{
+				state.AddError("No namespace specified in " + state.CurrentFile.Name);
+			}
+			else
+			{
+				state.CurrentClass = this;
+				foreach (var s in Statements) { s.Analyze(state); }
+			}
 		}
 	}
 
@@ -208,10 +214,6 @@ namespace Minet.Compiler.AST
 	{
 		public void Analyze(WalkState state)
 		{
-			if (!string.IsNullOrEmpty(state.CurrentFile.Namespace))
-			{
-				state.AddError("Namespace redefined in file " + state.CurrentFile.Name);
-			}
 			state.CurrentFile.Namespace = Name.ToString();
 		}
 	}

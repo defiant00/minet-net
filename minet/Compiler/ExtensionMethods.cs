@@ -1,7 +1,7 @@
 ﻿using Minet.Compiler.AST;
 using System.Collections.Generic;
 
-namespace minet.Compiler
+namespace Minet.Compiler
 {
 	public static class ExtensionMethods
 	{

@@ -1,5 +1,4 @@
-﻿using minet.Compiler;
-using System;
+﻿using System;
 using System.Reflection;
 
 namespace Minet.Compiler.AST
@@ -93,7 +92,7 @@ namespace Minet.Compiler.AST
 			var attr = TypeAttributes.Class | TypeAttributes.Public;
 			state.TypeBuilder = state.ModuleBuilder.DefineType(state.CurrentFile.Namespace + "." + Name, attr);
 
-			foreach(var s in Statements) { s.GenIL(state); }
+			foreach (var s in Statements) { s.GenIL(state); }
 		}
 	}
 
@@ -158,7 +157,7 @@ namespace Minet.Compiler.AST
 	{
 		public void GenIL(WalkState state)
 		{
-			//throw new NotImplementedException();
+			state.CurrentFunc = this;
 		}
 	}
 
@@ -212,7 +211,10 @@ namespace Minet.Compiler.AST
 
 	public partial class Namespace : Statement
 	{
-		public void GenIL(WalkState state) { }
+		public void GenIL(WalkState state)
+		{
+			state.CurrentFile.Namespace = Name.ToString();
+		}
 	}
 
 	public partial class Number : Expression
@@ -265,7 +267,10 @@ namespace Minet.Compiler.AST
 
 	public partial class Use : Statement
 	{
-		public void GenIL(WalkState state) { }
+		public void GenIL(WalkState state)
+		{
+			state.CurrentFile.Uses.Add(this);
+		}
 	}
 
 	public partial class UsePackage : Statement

@@ -1,7 +1,7 @@
-ns MinetTest
+ns MT
 
 use System
 
 MinetTest
-	main()
+	Main()
 		Console.WriteLine("Hello from Minet!")

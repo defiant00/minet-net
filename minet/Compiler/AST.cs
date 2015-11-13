@@ -1,5 +1,4 @@
-﻿using minet.Compiler;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Minet.Compiler.AST
 {

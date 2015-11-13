@@ -1,5 +1,4 @@
-﻿using minet.Compiler;
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -33,7 +32,7 @@ namespace Minet.Compiler
 					{
 						Console.WriteLine("Generating IL...");
 						gs = new WalkState();
-						gs.AssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("minetTest"), AssemblyBuilderAccess.Save);
+						gs.AssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("MT"), AssemblyBuilderAccess.Save);
 						gs.ModuleBuilder = gs.AssemblyBuilder.DefineDynamicModule("minetTest.exe");
 
 						fAST.Result.GenIL(gs);

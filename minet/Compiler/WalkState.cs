@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
 
-namespace minet.Compiler
+namespace Minet.Compiler
 {
 	public class WalkState
 	{
