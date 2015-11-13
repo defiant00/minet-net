@@ -273,21 +273,6 @@ namespace Minet.Compiler
 				}
 			}
 
-			if (accept(TokenType.With).Success)
-			{
-				while (true)
-				{
-					if (peek.Type != TokenType.Identifier)
-					{
-						return error<Statement>(true, "Invalid token in class " + c.Name + " with declaration: " + res.LastToken);
-					}
-					var st = parseIdentifier<Statement>();
-					c.Withs.Add(st.Result);
-					if (st.Error) { break; }
-					if (!accept(TokenType.Comma).Success) { break; }
-				}
-			}
-
 			res = accept(TokenType.EOL, TokenType.Indent);
 			if (!res.Success)
 			{
@@ -416,9 +401,6 @@ namespace Minet.Compiler
 						break;
 					case TokenType.Identifier:
 						f.Statements.Add(parseClass().Result);
-						break;
-					case TokenType.Interface:
-						f.Statements.Add(parseInterface().Result);
 						break;
 					case TokenType.Namespace:
 						f.Statements.Add(parseNamespace().Result);
@@ -683,81 +665,6 @@ namespace Minet.Compiler
 		{
 			if (peek.Type == TokenType.Is) { return parseIs(); }
 			return parseFunctionStmt();
-		}
-
-		private ParseResult<Statement> parseInterface()
-		{
-			var res = accept(TokenType.Interface, TokenType.Identifier);
-			if (!res.Success)
-			{
-				return error<Statement>(true, "Invalid token in interface: " + res.LastToken);
-			}
-
-			var intf = new Interface { Name = res[1].Val };
-
-			if (accept(TokenType.With).Success)
-			{
-				while (true)
-				{
-					if (peek.Type != TokenType.Identifier)
-					{
-						return error<Statement>(true, "Invalid token in interface " + intf.Name + ": " + peek);
-					}
-					intf.Withs.Add(parseIdentifier<Statement>().Result);
-
-					if (!accept(TokenType.Comma).Success) { break; }
-				}
-			}
-
-			res = accept(TokenType.EOL, TokenType.Indent);
-			if (!res.Success)
-			{
-				return error<Statement>(true, "Invalid token in interface " + intf.Name + ": " + res.LastToken);
-			}
-
-			while (!peek.Type.IsDedentStop())
-			{
-				// function_name(types)
-				res = accept(TokenType.Identifier, TokenType.LeftParen);
-				if (!res.Success)
-				{
-					return error<Statement>(true, "Invalid token in interface " + intf.Name + ": " + res.LastToken);
-				}
-				var fs = new IntfFuncSig { Name = res[0].Val };
-				while (peek.Type != TokenType.RightParen)
-				{
-					fs.Params.Add(parseType().Result);
-					switch (peek.Type)
-					{
-						case TokenType.Comma:
-							next();
-							break;
-						case TokenType.RightParen: break;
-						default:
-							return error<Statement>(true, "Invalid token in interface " + intf.Name + " function " + fs.Name + ": " + peek);
-					}
-				}
-				next(); // eat )
-
-				// return value(s)
-				fs.Returns = parseReturnValues().Result;
-
-				res = accept(TokenType.EOL);
-				if (!res.Success)
-				{
-					return error<Statement>(true, "Invalid token in interface " + intf.Name + " function " + fs.Name + ": " + res.LastToken);
-				}
-
-				intf.FuncSigs.Add(fs);
-			}
-
-			res = accept(TokenType.Dedent, TokenType.EOL);
-			if (!res.Success)
-			{
-				return error<Statement>(true, "Invalid token in interface " + intf.Name + ": " + res.LastToken);
-			}
-
-			return new ParseResult<Statement>(intf, false);
 		}
 
 		private ParseResult<Statement> parseIs()

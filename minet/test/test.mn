@@ -1,3 +1,7 @@
-main
+ns MinetTest
+
+use System
+
+MinetTest
 	main()
-		var x [,]fn(int, int) int = -someFuncs[1, 2](2, 3) + 4
+		Console.WriteLine("Hello from Minet!")

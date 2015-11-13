@@ -1,0 +1,450 @@
+﻿using System;
+using System.Text;
+
+namespace Minet.Compiler.AST
+{
+	public static class Helper
+	{
+		public static void PrintIndent(int indent)
+		{
+			for (int i = 0; i < indent; i++)
+			{
+				Console.Write("|   ");
+			}
+		}
+	}
+
+	public partial class Accessor : Expression
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("accessor");
+			Object.Print(indent + 2);
+			Helper.PrintIndent(indent + 1);
+			Console.WriteLine("index");
+			Index.Print(indent + 2);
+		}
+	}
+
+	public partial class Array : Statement
+	{
+		public override string ToString() { return "[" + Dimensions + "]" + Type; }
+
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(this);
+		}
+	}
+
+	public partial class ArrayCons : Expression
+	{
+		public override string ToString() { return "cons []" + Type; }
+
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(this);
+			Size.Print(indent + 1);
+		}
+	}
+
+	public partial class ArrayValueList : Expression
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("array value list");
+			Vals.Print(indent + 1);
+		}
+	}
+
+	public partial class Assign : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(Op);
+			Left.Print(indent + 1);
+			Right.Print(indent + 1);
+		}
+	}
+
+	public partial class Binary : Expression
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(Op);
+			Left.Print(indent + 1);
+			Right.Print(indent + 1);
+		}
+	}
+
+	public partial class Blank : Expression
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("_");
+		}
+	}
+
+	public partial class Bool : Expression
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("bool " + Val);
+		}
+	}
+
+	public partial class Break : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(string.IsNullOrEmpty(Label) ? "break" : "break " + Label);
+		}
+	}
+
+	public partial class Char : Expression
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("char '" + Val + "'");
+		}
+	}
+
+	public partial class Class : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.Write("class " + Name);
+			if (TypeParams.Count > 0) { Console.Write("<" + string.Join(", ", TypeParams) + ">"); }
+			Console.WriteLine();
+			foreach (var s in Statements) { s.Print(indent + 1); }
+		}
+	}
+
+	public partial class Defer : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("defer");
+			Expr.Print(indent + 1);
+		}
+	}
+
+	public partial class Error : Expression, Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("ERROR: " + Val);
+		}
+	}
+
+	public partial class ExprList : Expression
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("expression list");
+			foreach (var e in Expressions) { e.Print(indent + 1); }
+		}
+	}
+
+	public partial class ExprStmt : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("expression statement");
+			Expr.Print(indent + 1);
+		}
+	}
+
+	public partial class File : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(Name);
+			foreach (var s in Statements) { s.Print(indent + 1); }
+		}
+	}
+
+	public partial class For : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			if (!string.IsNullOrEmpty(Label)) { Console.Write(Label + ": "); }
+			Console.WriteLine("for " + string.Join(", ", Vars), " in");
+			In.Print(indent + 2);
+			foreach (var s in Statements) { s.Print(indent + 1); }
+		}
+	}
+
+	public partial class FunctionCall : Expression
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("func");
+			Function.Print(indent + 2);
+			if (Params != null)
+			{
+				Helper.PrintIndent(indent + 1);
+				Console.WriteLine("params");
+				Params.Print(indent + 2);
+			}
+		}
+	}
+
+	public partial class FunctionDef : Expression, Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			if (Static) { Console.Write("static "); }
+			Console.Write(string.IsNullOrEmpty(Name) ? "fn" : Name);
+			Console.Write("(");
+			Console.Write(string.Join(", ", Params));
+			Console.Write(")");
+			if (Returns.Count > 0)
+			{
+				Console.Write(" ");
+				if (Returns.Count > 1) { Console.Write("("); }
+				Console.Write(string.Join(", ", Returns));
+				if (Returns.Count > 1) { Console.Write(")"); }
+			}
+			Console.WriteLine();
+			foreach (var s in Statements) { s.Print(indent + 1); }
+		}
+	}
+
+	public partial class FunctionSig : Expression, Statement
+	{
+		public override string ToString()
+		{
+			var sb = new StringBuilder("fn(");
+			sb.Append(string.Join(", ", Params));
+			sb.Append(")");
+			if (Returns.Count > 0)
+			{
+				sb.Append(" ");
+				if (Returns.Count > 1) { sb.Append("("); }
+				sb.Append(string.Join(", ", Returns));
+				if (Returns.Count > 1) { sb.Append(")"); }
+			}
+			return sb.ToString();
+		}
+
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(this);
+		}
+	}
+
+	public partial class Identifier : Expression, Statement
+	{
+		public override string ToString() { return string.Join(".", Idents); }
+
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(this);
+		}
+	}
+
+	public partial class IdentPart
+	{
+		public override string ToString()
+		{
+			return TypeParams.Count > 0 ? Name + "<" + string.Join(", ", TypeParams) + ">" : Name;
+		}
+
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(this);
+		}
+	}
+
+	public partial class If : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("if");
+			if (Condition != null) { Condition.Print(indent + 1); }
+			else
+			{
+				Helper.PrintIndent(indent + 1);
+				Console.WriteLine("(implicit true)");
+			}
+			if (With != null)
+			{
+				Helper.PrintIndent(indent + 1);
+				Console.WriteLine("with");
+				With.Print(indent + 2);
+			}
+			Helper.PrintIndent(indent + 1);
+			Console.WriteLine("then");
+			foreach (var s in Statements) { s.Print(indent + 2); }
+		}
+	}
+
+	public partial class Is : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("is");
+			Condition.Print(indent + 1);
+			Helper.PrintIndent(indent + 1);
+			Console.WriteLine("then");
+			foreach (var s in Statements) { s.Print(indent + 2); }
+		}
+	}
+
+	public partial class Loop : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(string.IsNullOrEmpty(Label) ? "loop" : Label + ": loop");
+			foreach (var s in Statements) { s.Print(indent + 1); }
+		}
+	}
+
+	public partial class Namespace : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("namespace " + Name);
+		}
+	}
+
+	public partial class Number : Expression
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("number " + Val);
+		}
+	}
+
+	public partial class Property
+	{
+		public override string ToString()
+		{
+			string ret = Static ? "static " + Name : Name;
+			if (Type != null) { ret += " " + Type; }
+			return ret;
+		}
+
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(this);
+		}
+	}
+
+	public partial class PropertySet : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("prop set: " + string.Join(", ", Props));
+			if (Vals != null) { Vals.Print(indent + 1); }
+		}
+	}
+
+	public partial class Return : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("return");
+			Vals.Print(indent + 1);
+		}
+	}
+
+	public partial class String : Expression
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("string '" + Val + "'");
+		}
+	}
+
+	public partial class Unary : Expression
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(Op);
+			Expr.Print(indent + 1);
+		}
+	}
+
+	public partial class Use : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("use");
+			foreach (var p in Packages) { p.Print(indent + 1); }
+		}
+	}
+
+	public partial class UsePackage : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(string.IsNullOrEmpty(Alias) ? Pack.ToString() : Pack + " as " + Alias);
+		}
+	}
+
+	public partial class Variable : Statement
+	{
+		public override string ToString() { return Type != null ? Name + " " + Type : Name; }
+
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(this);
+		}
+	}
+
+	public partial class VarSet : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("var set");
+			foreach (var l in Lines) { l.Print(indent + 1); }
+		}
+	}
+
+	public partial class VarSetLine : Statement
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine(string.Join(", ", Vars));
+			if (Vals != null) { Vals.Print(indent + 1); }
+		}
+	}
+}
