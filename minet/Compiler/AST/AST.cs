@@ -5,7 +5,7 @@ namespace Minet.Compiler.AST
 	public interface General
 	{
 		void Print(int indent);
-		void GenIL(GenState state);
+		void GenFinal(WalkState state);
 	}
 
 	public interface Expression : General { }
@@ -69,6 +69,11 @@ namespace Minet.Compiler.AST
 		public List<Statement> Statements = new List<Statement>();
 	}
 
+	public partial class Constructor : Expression
+	{
+		public Expression Type, Params;
+	}
+
 	public partial class Defer : Statement
 	{
 		public Expression Expr;
@@ -93,10 +98,6 @@ namespace Minet.Compiler.AST
 	{
 		public string Name;
 		public List<Statement> Statements = new List<Statement>();
-
-		// After analysis
-		public string Namespace;
-		public List<Use> Uses = new List<Use>();
 	}
 
 	public partial class For : Statement

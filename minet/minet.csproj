@@ -43,15 +43,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compiler\AST.cs" />
+    <Compile Include="Compiler\AST\AST.cs" />
     <Compile Include="Compiler\Compiler.cs" />
-    <Compile Include="Compiler\ExtensionMethods.cs" />
-    <Compile Include="Compiler\ILGen.cs" />
+    <Compile Include="Compiler\AST\ExtensionMethods.cs" />
+    <Compile Include="Compiler\AST\GenFinal.cs" />
     <Compile Include="Compiler\Lexer.cs" />
     <Compile Include="Compiler\Parser.cs" />
-    <Compile Include="Compiler\Printer.cs" />
+    <Compile Include="Compiler\AST\Printer.cs" />
+    <Compile Include="Compiler\FAST\AST.cs" />
     <Compile Include="Compiler\Token.cs" />
-    <Compile Include="Compiler\GenState.cs" />
+    <Compile Include="Compiler\WalkState.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

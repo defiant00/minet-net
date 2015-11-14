@@ -7,10 +7,22 @@ namespace Minet.Compiler
 	public class Parser
 	{
 		private string filename;
+		private bool build, printTokens;
 		private int pos = 0;
 		private List<Token> tokens = new List<Token>();
 
-		public static ParseResult<Statement> Parse(string filename, bool build, bool printTokens)
+		public List<string> Errors = new List<string>();
+
+		public Parser(string filename, bool build, bool printTokens)
+		{
+			this.filename = filename;
+			this.build = build;
+			this.printTokens = printTokens;
+		}
+
+		public void AddError(string error) { Errors.Add(error); }
+
+		public ParseResult<Statement> Parse()
 		{
 			Console.WriteLine("Parsing file " + filename);
 
@@ -18,27 +30,20 @@ namespace Minet.Compiler
 			Console.WriteLine("Data loaded...");
 
 			var lexer = new Lexer(data);
-			var parser = new Parser { filename = filename };
 
-			if (printTokens)
-			{
-				Console.WriteLine(Environment.NewLine + "Tokens");
-			}
+			if (printTokens) { Console.WriteLine(Environment.NewLine + "Tokens"); }
 
 			foreach (var t in lexer.Tokens)
 			{
-				if (build && t.Type != TokenType.Comment) { parser.tokens.Add(t); }
+				if (build && t.Type != TokenType.Comment) { tokens.Add(t); }
 				if (printTokens) { Console.Write(" " + t); }
 			}
-			if (parser.tokens.Count > 0)
+			if (tokens.Count > 0)
 			{
-				var t = parser.tokens[parser.tokens.Count - 1];
-				if (t.Type == TokenType.Error)
-				{
-					return parser.error<Statement>(false, "Error: " + t);
-				}
+				var t = tokens[tokens.Count - 1];
+				if (t.Type == TokenType.Error) { return error<Statement>(false, t.ToString()); }
 			}
-			return parser.parseFile();
+			return parseFile();
 		}
 
 		private Token peek { get { return tokens[pos]; } }
@@ -65,6 +70,7 @@ namespace Minet.Compiler
 		private ParseResult<T> error<T>(bool toNextLine, string error) where T : class, General
 		{
 			this.toNextLine(toNextLine);
+			AddError(error);
 			return new ParseResult<T>(new Error { Val = error } as T, true);
 		}
 
@@ -339,6 +345,13 @@ namespace Minet.Compiler
 			}
 
 			return new ParseResult<Statement>(ps, false);
+		}
+
+		private ParseResult<Expression> parseConstructor(Expression lhs)
+		{
+			var fc = new Constructor { Type = lhs };
+			fc.Params = parseMLExprList(TokenType.LeftCurly, TokenType.RightCurly).Result;
+			return new ParseResult<Expression>(fc, false);
 		}
 
 		private ParseResult<Statement> parseDefer()
@@ -838,10 +851,20 @@ namespace Minet.Compiler
 
 			if (lhs != null)
 			{
-				while (peek.Type == TokenType.LeftBracket || peek.Type == TokenType.LeftParen)
+				while (peek.Type == TokenType.LeftBracket || peek.Type == TokenType.LeftCurly || peek.Type == TokenType.LeftParen)
 				{
-					if (peek.Type == TokenType.LeftBracket) { lhs = parseAccessor(lhs).Result; }
-					else { lhs = parseFunctionCall(lhs).Result; }
+					switch (peek.Type)
+					{
+						case TokenType.LeftBracket:
+							lhs = parseAccessor(lhs).Result;
+							break;
+						case TokenType.LeftCurly:
+							lhs = parseConstructor(lhs).Result;
+							break;
+						case TokenType.LeftParen:
+							lhs = parseFunctionCall(lhs).Result;
+							break;
+					}
 				}
 				return new ParseResult<Expression>(lhs, false);
 			}
@@ -997,7 +1020,7 @@ namespace Minet.Compiler
 			{
 				return new ParseResult<Statement>(vars.Result[vars.Result.Count - 1], true);
 			}
-			foreach(Variable va in vars.Result) { v.Vars.Add(va); }
+			foreach (Variable va in vars.Result) { v.Vars.Add(va); }
 
 			if (accept(TokenType.Assign).Success) { v.Vals = parseExprList().Result; }
 

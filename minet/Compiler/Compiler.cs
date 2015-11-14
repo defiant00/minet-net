@@ -1,7 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
-using System.Reflection.Emit;
 
 // https://neildanson.wordpress.com/2014/02/11/building-a-c-compiler-in-f/
 // http://www.trelford.com/blog/post/compiler.aspx
@@ -14,38 +12,39 @@ namespace Minet.Compiler
 		{
 			Console.WriteLine("Building " + path);
 
+			var ws = new WalkState();
+
 			var files = Directory.GetFiles(path, "*.mn");
 			foreach (string file in files)
 			{
-				var fAST = Parser.Parse(file, build, printTokens);
-				if (printAST)
+				var p = new Parser(file, build, printTokens);
+				var ast = p.Parse();
+				if (p.Errors.Count == 0)
 				{
-					Console.WriteLine(Environment.NewLine + Environment.NewLine + "AST");
-					fAST.Result.Print(1);
+					if (printAST)
+					{
+						Console.WriteLine(Environment.NewLine + Environment.NewLine + "AST");
+						ast.Result.Print(1);
+					}
+					if (build)
+					{
+						ast.Result.GenFinal(ws);
+						if (ws.Errors.Count > 0) { break; }
+					}
 				}
-				if (build)
+				else { foreach (var e in p.Errors) { ws.AddError(e); } }
+			}
+
+			if (build)
+			{
+				if (ws.Errors.Count == 0)
 				{
-					Console.WriteLine("Analyzing AST...");
 
-					Console.WriteLine("Generating IL...");
-					var gs = new GenState();
-					gs.AssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("MT"), AssemblyBuilderAccess.Save);
-					gs.ModuleBuilder = gs.AssemblyBuilder.DefineDynamicModule("minetTest.exe");
-
-					fAST.Result.GenIL(gs);
-
-					if (gs.Errors.Count == 0)
-					{
-						gs.AssemblyBuilder.Save("minetTest.exe");
-					}
-					else
-					{
-						Console.WriteLine("Errors:");
-						foreach (var e in gs.Errors)
-						{
-							Console.WriteLine(e);
-						}
-					}
+				}
+				else
+				{
+					Console.WriteLine(Environment.NewLine + Environment.NewLine + "Errors:");
+					foreach (var e in ws.Errors) { Console.WriteLine(e); }
 				}
 			}
 		}

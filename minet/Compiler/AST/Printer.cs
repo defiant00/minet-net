@@ -130,7 +130,22 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Defer : Statement
+	public partial class Constructor : Expression
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("cons " + Type);
+			if (Params != null)
+			{
+				Helper.PrintIndent(indent + 1);
+				Console.WriteLine("params");
+				Params.Print(indent + 2);
+			}
+		}
+	}
+
+		public partial class Defer : Statement
 	{
 		public void Print(int indent)
 		{

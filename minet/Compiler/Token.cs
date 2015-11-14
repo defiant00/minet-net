@@ -49,6 +49,8 @@ namespace Minet.Compiler
 		RightParen,         // ')'
 		LeftBracket,        // '['
 		RightBracket,       // ']'
+		LeftCurly,          // '{'
+		RightCurly,         // '}'
 		assign_start,
 		Assign,             // '='
 		AddAssign,          // '+='
@@ -143,6 +145,8 @@ namespace Minet.Compiler
 			{")",       TokenType.RightParen},
 			{"[",       TokenType.LeftBracket},
 			{"]",       TokenType.RightBracket},
+			{"{",       TokenType.LeftCurly},
+			{"}",       TokenType.RightCurly},
 			{"=",       TokenType.Assign},
 			{"+=",      TokenType.AddAssign},
 			{"-=",      TokenType.SubAssign},
