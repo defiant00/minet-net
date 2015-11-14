@@ -4,7 +4,7 @@ using System.Reflection.Emit;
 
 namespace Minet.Compiler
 {
-	public class WalkState
+	public class GenState
 	{
 		public string OutFile;
 		public File CurrentFile;

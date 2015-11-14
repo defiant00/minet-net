@@ -5,7 +5,7 @@ namespace Minet.Compiler
 {
 	public static class ExtensionMethods
 	{
-		public static void CalcTypeList(this List<Variable> list, WalkState state, string error)
+		public static void CalcTypeList(this List<Variable> list, GenState state, string error)
 		{
 			Statement type = null;
 			for (int i = list.Count - 1; i >= 0; i--)

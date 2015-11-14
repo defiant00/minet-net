@@ -26,19 +26,18 @@ namespace Minet.Compiler
 				if (build)
 				{
 					Console.WriteLine("Analyzing AST...");
-					var gs = new WalkState();
-					fAST.Result.Analyze(gs);
+
+					Console.WriteLine("Generating IL...");
+					var gs = new GenState();
+					gs.AssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("MT"), AssemblyBuilderAccess.Save);
+					gs.ModuleBuilder = gs.AssemblyBuilder.DefineDynamicModule("minetTest.exe");
+
+					fAST.Result.GenIL(gs);
+
 					if (gs.Errors.Count == 0)
 					{
-						Console.WriteLine("Generating IL...");
-						gs = new WalkState();
-						gs.AssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("MT"), AssemblyBuilderAccess.Save);
-						gs.ModuleBuilder = gs.AssemblyBuilder.DefineDynamicModule("minetTest.exe");
-
-						fAST.Result.GenIL(gs);
-
 						gs.AssemblyBuilder.Save("minetTest.exe");
-                    }
+					}
 					else
 					{
 						Console.WriteLine("Errors:");
