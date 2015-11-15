@@ -67,11 +67,7 @@
 			if (Params.CalcTypeList(ws, "Missing parameter types for function " + cl.Name + "." + Name))
 			{
 				var fn = new FAST.Function(Static, Name, Params.ToFAST(ws));
-
-				if (!cl.AddFunction(fn))
-				{
-					ws.AddError("Function " + fn.FunctionSig + " already exists in class " + cl.Name);
-				}
+				cl.Functions.Add(fn);
 
 				foreach (var r in Returns) { fn.Returns.Add(r.ToFAST(ws)); }
 

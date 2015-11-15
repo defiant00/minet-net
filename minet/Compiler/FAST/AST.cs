@@ -41,16 +41,6 @@ namespace Minet.Compiler.FAST
 	{
 		public string Name;
 		public List<Function> Functions = new List<Function>();
-
-		public bool AddFunction(Function func)
-		{
-			foreach (var f in Functions)
-			{
-				if (f.FunctionSig == func.FunctionSig) { return false; }
-			}
-			Functions.Add(func);
-			return true;
-		}
 	}
 
 	public class Function
@@ -60,22 +50,11 @@ namespace Minet.Compiler.FAST
 		public List<Variable> Parameters;
 		public List<Type> Returns = new List<Type>();
 
-		public string FunctionSig;
-
 		public Function(bool stat, string name, List<Variable> pars)
 		{
 			Static = stat;
 			Name = name;
 			Parameters = pars;
-
-			FunctionSig = Name + "(";
-			string comma = "";
-			foreach (var p in pars)
-			{
-				FunctionSig += comma + p.Type;
-				comma = ", ";
-			}
-			FunctionSig += ")";
 		}
 	}
 
