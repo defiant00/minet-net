@@ -5,7 +5,6 @@ namespace Minet.Compiler.AST
 	public interface General
 	{
 		void Print(int indent);
-		void GenFinal(WalkState state);
 	}
 
 	public interface Expression : General { }

@@ -2,6 +2,25 @@
 
 namespace Minet.Compiler.FAST
 {
+	public interface Type { }
+
+	public class ArrayType : Type
+	{
+		public Type Type;
+		public int Dimensions;
+
+		public override string ToString()
+		{
+			string ret = "[";
+			for (int i = 1; i < Dimensions; i++)
+			{
+				ret += ",";
+			}
+			ret += "]" + Type;
+			return ret;
+		}
+	}
+
 	public class Assembly
 	{
 		public List<Class> Classes = new List<Class>();
@@ -13,7 +32,7 @@ namespace Minet.Compiler.FAST
 				if (c.Name == name) { return c; }
 			}
 			var cl = new Class { Name = name };
-            Classes.Add(cl);
+			Classes.Add(cl);
 			return cl;
 		}
 	}
@@ -22,11 +41,64 @@ namespace Minet.Compiler.FAST
 	{
 		public string Name;
 		public List<Function> Functions = new List<Function>();
+
+		public bool AddFunction(Function func)
+		{
+			foreach (var f in Functions)
+			{
+				if (f.FunctionSig == func.FunctionSig) { return false; }
+			}
+			Functions.Add(func);
+			return true;
+		}
 	}
 
 	public class Function
 	{
-		public string Name;
 		public bool Static;
+		public string Name;
+		public List<Variable> Parameters;
+		public List<Type> Returns = new List<Type>();
+
+		public string FunctionSig;
+
+		public Function(bool stat, string name, List<Variable> pars)
+		{
+			Static = stat;
+			Name = name;
+			Parameters = pars;
+
+			FunctionSig = Name + "(";
+			string comma = "";
+			foreach (var p in pars)
+			{
+				FunctionSig += comma + p.Type;
+				comma = ", ";
+			}
+			FunctionSig += ")";
+		}
+	}
+
+	public class FunctionType : Type
+	{
+		public override string ToString() { return "fn()"; }
+	}
+
+	public class GenType : Type
+	{
+		public string Identifier;
+
+		public override string ToString() { return Identifier; }
+	}
+
+	public class UsePackage
+	{
+		public string Package, Alias;
+	}
+
+	public class Variable
+	{
+		public string Name;
+		public Type Type;
 	}
 }

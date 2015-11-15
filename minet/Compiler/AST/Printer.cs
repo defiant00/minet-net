@@ -14,7 +14,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Accessor : Expression
+	public partial class Accessor
 	{
 		public void Print(int indent)
 		{
@@ -27,7 +27,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Array : Statement
+	public partial class Array
 	{
 		public override string ToString() { return "[" + Dimensions + "]" + Type; }
 
@@ -38,7 +38,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class ArrayCons : Expression
+	public partial class ArrayCons
 	{
 		public override string ToString() { return "cons []" + Type; }
 
@@ -50,7 +50,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class ArrayValueList : Expression
+	public partial class ArrayValueList
 	{
 		public void Print(int indent)
 		{
@@ -60,7 +60,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Assign : Statement
+	public partial class Assign
 	{
 		public void Print(int indent)
 		{
@@ -71,7 +71,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Binary : Expression
+	public partial class Binary
 	{
 		public void Print(int indent)
 		{
@@ -82,7 +82,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Blank : Expression
+	public partial class Blank
 	{
 		public void Print(int indent)
 		{
@@ -91,7 +91,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Bool : Expression
+	public partial class Bool
 	{
 		public void Print(int indent)
 		{
@@ -100,7 +100,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Break : Statement
+	public partial class Break
 	{
 		public void Print(int indent)
 		{
@@ -109,7 +109,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Char : Expression
+	public partial class Char
 	{
 		public void Print(int indent)
 		{
@@ -118,7 +118,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Class : Statement
+	public partial class Class
 	{
 		public void Print(int indent)
 		{
@@ -130,7 +130,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Constructor : Expression
+	public partial class Constructor
 	{
 		public void Print(int indent)
 		{
@@ -145,7 +145,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-		public partial class Defer : Statement
+		public partial class Defer
 	{
 		public void Print(int indent)
 		{
@@ -155,7 +155,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Error : Expression, Statement
+	public partial class Error
 	{
 		public void Print(int indent)
 		{
@@ -164,7 +164,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class ExprList : Expression
+	public partial class ExprList
 	{
 		public void Print(int indent)
 		{
@@ -174,7 +174,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class ExprStmt : Statement
+	public partial class ExprStmt
 	{
 		public void Print(int indent)
 		{
@@ -184,7 +184,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class File : Statement
+	public partial class File
 	{
 		public void Print(int indent)
 		{
@@ -194,7 +194,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class For : Statement
+	public partial class For
 	{
 		public void Print(int indent)
 		{
@@ -206,7 +206,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class FunctionCall : Expression
+	public partial class FunctionCall
 	{
 		public void Print(int indent)
 		{
@@ -222,7 +222,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class FunctionDef : Expression, Statement
+	public partial class FunctionDef
 	{
 		public void Print(int indent)
 		{
@@ -244,7 +244,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class FunctionSig : Expression, Statement
+	public partial class FunctionSig
 	{
 		public override string ToString()
 		{
@@ -268,7 +268,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Identifier : Expression, Statement
+	public partial class Identifier
 	{
 		public override string ToString() { return string.Join(".", Idents); }
 
@@ -293,7 +293,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class If : Statement
+	public partial class If
 	{
 		public void Print(int indent)
 		{
@@ -317,7 +317,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Is : Statement
+	public partial class Is
 	{
 		public void Print(int indent)
 		{
@@ -330,7 +330,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Loop : Statement
+	public partial class Loop
 	{
 		public void Print(int indent)
 		{
@@ -340,7 +340,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Namespace : Statement
+	public partial class Namespace
 	{
 		public void Print(int indent)
 		{
@@ -349,7 +349,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Number : Expression
+	public partial class Number
 	{
 		public void Print(int indent)
 		{
@@ -374,7 +374,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class PropertySet : Statement
+	public partial class PropertySet
 	{
 		public void Print(int indent)
 		{
@@ -384,7 +384,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Return : Statement
+	public partial class Return
 	{
 		public void Print(int indent)
 		{
@@ -394,7 +394,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class String : Expression
+	public partial class String
 	{
 		public void Print(int indent)
 		{
@@ -403,7 +403,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Unary : Expression
+	public partial class Unary
 	{
 		public void Print(int indent)
 		{
@@ -413,7 +413,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Use : Statement
+	public partial class Use
 	{
 		public void Print(int indent)
 		{
@@ -423,7 +423,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class UsePackage : Statement
+	public partial class UsePackage
 	{
 		public void Print(int indent)
 		{
@@ -432,7 +432,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class Variable : Statement
+	public partial class Variable
 	{
 		public override string ToString() { return Type != null ? Name + " " + Type : Name; }
 
@@ -443,7 +443,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class VarSet : Statement
+	public partial class VarSet
 	{
 		public void Print(int indent)
 		{
@@ -453,7 +453,7 @@ namespace Minet.Compiler.AST
 		}
 	}
 
-	public partial class VarSetLine : Statement
+	public partial class VarSetLine
 	{
 		public void Print(int indent)
 		{

@@ -1,316 +1,93 @@
-﻿using System;
-
-namespace Minet.Compiler.AST
+﻿namespace Minet.Compiler.AST
 {
-	public partial class Accessor : Expression
+	public partial class Class
 	{
-		public void GenFinal(WalkState state)
+		public void GenFinal(WalkState ws)
 		{
-			throw new NotImplementedException();
+			if (!string.IsNullOrEmpty(ws.Namespace))
+			{
+				var cl = ws.Assembly.GetClass(ws.Namespace + "." + Name);
+				foreach (var s in Statements)
+				{
+					var t = s.GetType();
+					if (t == typeof(FunctionDef))
+					{
+						(s as FunctionDef).GenFinal(ws, cl);
+					}
+					else
+					{
+						ws.AddError("Unknown type '" + t.Name + "' in Class.GenFinal");
+					}
+				}
+			}
+			else
+			{
+				ws.AddError("No namespace specified for class " + Name);
+			}
 		}
 	}
 
-	public partial class Array : Statement
+	public partial class File
 	{
-		public void GenFinal(WalkState state)
+		public void GenFinal(WalkState ws)
 		{
-			throw new NotImplementedException();
+			ws.FileReset();
+			foreach (var s in Statements)
+			{
+				var t = s.GetType();
+				if (t == typeof(Class))
+				{
+					(s as Class).GenFinal(ws);
+				}
+				else if (t == typeof(Namespace))
+				{
+					var n = s as Namespace;
+					ws.Namespace = n.Name.ToString();
+				}
+				else if (t == typeof(Use))
+				{
+					var u = s as Use;
+					foreach (var p in u.Packages)
+					{
+						ws.Uses.Add(new FAST.UsePackage { Package = p.Pack.ToString(), Alias = p.Alias });
+					}
+				}
+				else
+				{
+					ws.AddError("Unknown type '" + t.Name + "' in File.GenFinal");
+				}
+			}
 		}
 	}
 
-	public partial class ArrayCons : Expression
+	public partial class FunctionDef
 	{
-		public void GenFinal(WalkState state)
+		public void GenFinal(WalkState ws, FAST.Class cl)
 		{
-			throw new NotImplementedException();
-		}
-	}
+			if (Params.CalcTypeList(ws, "Missing parameter types for function " + cl.Name + "." + Name))
+			{
+				var fn = new FAST.Function(Static, Name, Params.ToFAST(ws));
 
-	public partial class ArrayValueList : Expression
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
+				if (!cl.AddFunction(fn))
+				{
+					ws.AddError("Function " + fn.FunctionSig + " already exists in class " + cl.Name);
+				}
 
-	public partial class Assign : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
+				foreach (var r in Returns) { fn.Returns.Add(r.ToFAST(ws)); }
 
-	public partial class Binary : Expression
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
+				foreach (var s in Statements)
+				{
+					var t = s.GetType();
+					if (t == typeof(ExprStmt))
+					{
 
-	public partial class Blank : Expression
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Bool : Expression
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Break : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Char : Expression
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Class : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			state.CurrentClass = state.Assembly.GetClass(Name);
-			foreach (var s in Statements) { s.GenFinal(state); }
-			state.CurrentClass = null;
-		}
-	}
-
-	public partial class Constructor : Expression
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Defer : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Error : Expression, Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class ExprList : Expression
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class ExprStmt : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class File : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			state.Reset();
-			foreach (var s in Statements) { s.GenFinal(state); }
-		}
-	}
-
-	public partial class For : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class FunctionCall : Expression
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class FunctionDef : Expression, Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			Params.CalcTypeList(state, "Missing type declaration for function parameters in " + Name);
-			var fn = new FAST.Function { Name = Name, Static = Static };
-			state.CurrentClass.Functions.Add(fn);
-			state.CurrentFunction = fn;
-			foreach (var s in Statements) { s.GenFinal(state); }
-			state.CurrentFunction = null;
-		}
-	}
-
-	public partial class FunctionSig : Expression, Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Identifier : Expression, Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class IdentPart
-	{
-		public void GenIL(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class If : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Is : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Loop : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Namespace : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			state.CurrentNamespace = Name.ToString();
-		}
-	}
-
-	public partial class Number : Expression
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Property
-	{
-		public void GenIL(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class PropertySet : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Return : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class String : Expression
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Unary : Expression
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Use : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			foreach (var p in Packages) { state.CurrentUses.Add(p.Pack.ToString()); }
-		}
-	}
-
-	public partial class UsePackage : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class Variable : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class VarSet : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
-		}
-	}
-
-	public partial class VarSetLine : Statement
-	{
-		public void GenFinal(WalkState state)
-		{
-			throw new NotImplementedException();
+					}
+					else
+					{
+						ws.AddError("Unknown type '" + t.Name + "' in FunctionDef.GenFinal");
+					}
+				}
+			}
 		}
 	}
 }

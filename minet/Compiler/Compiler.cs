@@ -28,7 +28,7 @@ namespace Minet.Compiler
 					}
 					if (build)
 					{
-						ast.Result.GenFinal(ws);
+						(ast.Result as AST.File).GenFinal(ws);
 						if (ws.Errors.Count > 0) { break; }
 					}
 				}

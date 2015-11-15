@@ -6,21 +6,16 @@ namespace Minet.Compiler
 	public class WalkState
 	{
 		public Assembly Assembly = new Assembly();
-
-		public string CurrentNamespace;
-		public List<string> CurrentUses = new List<string>();
-		public Class CurrentClass;
-		public Function CurrentFunction;
+		public List<UsePackage> Uses = new List<UsePackage>();
+		public string Namespace;
 
 		public List<string> Errors = new List<string>();
 		public void AddError(string error) { Errors.Add(error); }
 
-		public void Reset()
+		public void FileReset()
 		{
-			CurrentNamespace = null;
-			CurrentClass = null;
-			CurrentFunction = null;
-			CurrentUses.Clear();
+			Uses.Clear();
+			Namespace = null;
 		}
 	}
 }
