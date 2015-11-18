@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace Minet.Compiler.FAST
 {
@@ -23,24 +26,55 @@ namespace Minet.Compiler.FAST
 
 	public class Assembly
 	{
+		public string Name, FileName;
 		public List<Class> Classes = new List<Class>();
+		public AssemblyBuilder AssemblyBuilder;
+		public ModuleBuilder ModuleBuilder;
 
-		public Class GetClass(string name)
+		public Assembly(string name, string fileName)
 		{
+			Name = name;
+			FileName = fileName;
+			AssemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName(name), AssemblyBuilderAccess.Save);
+			ModuleBuilder = AssemblyBuilder.DefineDynamicModule(fileName);
+		}
+
+		public Class GetClass(string ns, string name)
+		{
+			string fullName = ns + "." + name;
 			foreach (var c in Classes)
 			{
-				if (c.Name == name) { return c; }
+				if (c.FullName == fullName) { return c; }
 			}
-			var cl = new Class { Name = name };
+			var cl = new Class(this, ns, name);
 			Classes.Add(cl);
 			return cl;
 		}
+
+		public void CreateTypes()
+		{
+			foreach (var c in Classes) { c.CreateType(); }
+		}
+
+		public void Save() { AssemblyBuilder.Save(FileName); }
 	}
 
 	public class Class
 	{
-		public string Name;
+		public string Name, FullName;
 		public List<Function> Functions = new List<Function>();
+		public TypeBuilder TypeBuilder;
+		public TypeAttributes Access { get; private set; }
+
+		public Class(Assembly asm, string ns, string name)
+		{
+			Name = name;
+			FullName = ns + "." + name;
+			Access = char.IsUpper(Name[0]) ? TypeAttributes.Public : TypeAttributes.NotPublic;
+            TypeBuilder = asm.ModuleBuilder.DefineType(FullName, Access);
+		}
+
+		public void CreateType() { TypeBuilder.CreateType(); }
 	}
 
 	public class Function

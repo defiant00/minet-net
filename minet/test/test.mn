@@ -1,7 +1,8 @@
-ns MT
-
-use System
+ns MTest
 
 MinetTest
 	Main()
-		Console.WriteLine("Hello from Minet!")
+		System.Console.WriteLine("Hello from Minet!")
+secondClass
+	Thing()
+		_

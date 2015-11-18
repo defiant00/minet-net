@@ -7,17 +7,16 @@ namespace Minet.Compiler
 	public class Parser
 	{
 		private string filename;
-		private bool build, printTokens;
+		private BuildConfig config;
 		private int pos = 0;
 		private List<Token> tokens = new List<Token>();
 
 		public List<string> Errors = new List<string>();
 
-		public Parser(string filename, bool build, bool printTokens)
+		public Parser(string filename, BuildConfig config)
 		{
 			this.filename = filename;
-			this.build = build;
-			this.printTokens = printTokens;
+			this.config = config;
 		}
 
 		public void AddError(string error) { Errors.Add(error); }
@@ -30,6 +29,9 @@ namespace Minet.Compiler
 			Console.WriteLine("Data loaded...");
 
 			var lexer = new Lexer(data);
+
+			bool printTokens = config.IsSet("printTokens");
+			bool build = config.IsSet("build");
 
 			if (printTokens) { Console.WriteLine(Environment.NewLine + "Tokens"); }
 
