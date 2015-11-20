@@ -33,7 +33,7 @@ namespace Minet.Compiler.AST
 			return ret;
 		}
 
-		public static FAST.Type ToFAST(this Statement type, WalkState ws)
+		public static FAST.IType ToFAST(this Statement type, WalkState ws)
 		{
 			var t = type.GetType();
 			if (t == typeof(Array))

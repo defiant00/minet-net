@@ -123,7 +123,8 @@ namespace Minet.Compiler.AST
 		public void Print(int indent)
 		{
 			Helper.PrintIndent(indent);
-			Console.Write("class " + Name);
+			Console.Write(Public ? "public" : "private");
+			Console.Write(" class " + Name);
 			if (TypeParams.Count > 0) { Console.Write("<" + string.Join(", ", TypeParams) + ">"); }
 			Console.WriteLine();
 			foreach (var s in Statements) { s.Print(indent + 1); }

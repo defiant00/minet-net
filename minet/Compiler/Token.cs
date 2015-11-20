@@ -24,7 +24,6 @@ namespace Minet.Compiler
 		In,                 // 'in'
 		With,               // 'with'
 		Function,           // 'fn'
-		Interface,          // 'intf'
 		Var,                // 'var'
 		Return,             // 'ret'
 		Defer,              // 'defer'
@@ -120,7 +119,6 @@ namespace Minet.Compiler
 			{"in",      TokenType.In},
 			{"with",    TokenType.With},
 			{"fn",      TokenType.Function},
-			{"intf",    TokenType.Interface},
 			{"var",     TokenType.Var},
 			{"ret",     TokenType.Return},
 			{"defer",   TokenType.Defer},

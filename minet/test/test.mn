@@ -1,8 +1,12 @@
 ns MTest
 
-MinetTest
+C.MinetTest
+	c.SubClass
+		C.PublicSub
+			dood()
+				_
 	Main()
 		System.Console.WriteLine("Hello from Minet!")
-secondClass
+c.SecondClass
 	Thing()
 		_

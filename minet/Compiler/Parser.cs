@@ -253,14 +253,14 @@ namespace Minet.Compiler
 			return new ParseResult<Expression>(c, false);
 		}
 
-		private ParseResult<Statement> parseClass()
+		private ParseResult<Statement> parseClass(bool pub)
 		{
 			var res = accept(TokenType.Identifier);
 			if (!res.Success)
 			{
 				return error<Statement>(true, "Invalid token in class declaration: " + res.LastToken);
 			}
-			var c = new Class { Name = res[0].Val };
+			var c = new Class { Name = res[0].Val, Public = pub };
 
 			if (accept(TokenType.LeftCaret).Success)
 			{
@@ -303,19 +303,14 @@ namespace Minet.Compiler
 
 		private ParseResult<Statement> parseClassStmt()
 		{
-			switch (peek.Type)
-			{
-				case TokenType.Dot:
-				case TokenType.Identifier:
-					return parseClassStmtIdent();
-				default:
-					return error<Statement>(true, "Invalid token in class statement: " + peek);
-			}
-		}
-
-		private ParseResult<Statement> parseClassStmtIdent()
-		{
 			var ps = new PropertySet();
+
+			// Nested class, interface or enum
+			if(accept(TokenType.Identifier, TokenType.Dot).Success)
+			{
+				backup(2);
+				return parseTopLevelIdentifier();
+			}
 
 			while (true)
 			{
@@ -415,7 +410,7 @@ namespace Minet.Compiler
 						next();
 						break;
 					case TokenType.Identifier:
-						f.Statements.Add(parseClass().Result);
+						f.Statements.Add(parseTopLevelIdentifier().Result);
 						break;
 					case TokenType.Namespace:
 						f.Statements.Add(parseNamespace().Result);
@@ -918,6 +913,19 @@ namespace Minet.Compiler
 		{
 			var s = new AST.String { Val = next().Val };
 			return new ParseResult<Expression>(s, false);
+		}
+
+		private ParseResult<Statement> parseTopLevelIdentifier()
+		{
+			var res = accept(TokenType.Identifier, TokenType.Dot);
+			if (!res.Success) { return error<Statement>(true, "Invalid token in top-level statement: " + res.LastToken); }
+			switch (res[0].Val.ToLower())
+			{
+				case "c":
+					return parseClass(res[0].Val == "C");
+				default:
+					return error<Statement>(true, "Invalid type identifier in top-level statement: " + res[0].Val);
+			}
 		}
 
 		private ParseResult<Statement> parseType()

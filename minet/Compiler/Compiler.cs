@@ -30,15 +30,12 @@ namespace Minet.Compiler
 				else { foreach (var e in p.Errors) { errors.Add(e); } }
 			}
 
-			if (config.IsSet("build"))
+			if (config.IsSet("build") && errors.Count == 0)
 			{
 				var ws = new WalkState(config["asm"], config["out"]);
 				errors = ws.Errors;
 
-				if (errors.Count == 0)
-				{
-					foreach (var a in asts) { a.GenTypes(ws); }
-				}
+				if (errors.Count == 0) { foreach (var a in asts) { a.GenTypes(ws); } }
 				if (errors.Count == 0) { ws.Assembly.CreateTypes(); }
 				if (errors.Count == 0) { ws.Save(); }
 			}

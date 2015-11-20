@@ -64,6 +64,7 @@ namespace Minet.Compiler.AST
 	public partial class Class : Statement
 	{
 		public string Name;
+		public bool Public;
 		public List<string> TypeParams = new List<string>();
 		public List<Statement> Statements = new List<Statement>();
 	}
