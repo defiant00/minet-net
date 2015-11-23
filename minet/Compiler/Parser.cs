@@ -21,7 +21,7 @@ namespace Minet.Compiler
 
 		public void AddError(string error) { Errors.Add(error); }
 
-		public ParseResult<Statement> Parse()
+		public ParseResult<IStatement> Parse()
 		{
 			Console.WriteLine("Parsing file " + filename);
 
@@ -43,7 +43,7 @@ namespace Minet.Compiler
 			if (tokens.Count > 0)
 			{
 				var t = tokens[tokens.Count - 1];
-				if (t.Type == TokenType.Error) { return error<Statement>(false, t.ToString()); }
+				if (t.Type == TokenType.Error) { return error<IStatement>(false, t.ToString()); }
 			}
 			return parseFile();
 		}
@@ -69,7 +69,7 @@ namespace Minet.Compiler
 			}
 		}
 
-		private ParseResult<T> error<T>(bool toNextLine, string error) where T : class, General
+		private ParseResult<T> error<T>(bool toNextLine, string error) where T : class, IGeneral
 		{
 			this.toNextLine(toNextLine);
 			AddError(error);
@@ -124,7 +124,7 @@ namespace Minet.Compiler
 			return res;
 		}
 
-		private ParseResult<Expression> parseAccessor(Expression lhs)
+		private ParseResult<IExpression> parseAccessor(IExpression lhs)
 		{
 			next(); // eat [
 			var expr = parseExprList();
@@ -132,20 +132,20 @@ namespace Minet.Compiler
 			var res = accept(TokenType.RightBracket);
 			if (!res.Success)
 			{
-				return error<Expression>(true, "Invalid token in accessor: " + res.LastToken);
+				return error<IExpression>(true, "Invalid token in accessor: " + res.LastToken);
 			}
 			var acc = new Accessor { Object = lhs, Index = expr.Result };
-			return new ParseResult<Expression>(acc, false);
+			return new ParseResult<IExpression>(acc, false);
 		}
 
-		private ParseResult<Expression> parseAnonFuncExpr()
+		private ParseResult<IExpression> parseAnonFuncExpr()
 		{
 			next(); // eat fn
 			var st = parseFunctionDef(true, "");
-			return new ParseResult<Expression>(st.Result as Expression, st.Error);
+			return new ParseResult<IExpression>(st.Result as IExpression, st.Error);
 		}
 
-		private ParseResult<Statement> parseArrayType()
+		private ParseResult<IStatement> parseArrayType()
 		{
 			next(); // eat [
 			int dim = 1;
@@ -157,22 +157,22 @@ namespace Minet.Compiler
 			var res = accept(TokenType.RightBracket);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in array type: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in array type: " + res.LastToken);
 			}
 			var type = parseType();
 			if (type.Error) { return type; }
-			return new ParseResult<Statement>(new AST.Array { Type = type.Result, Dimensions = dim }, false);
+			return new ParseResult<IStatement>(new AST.Array { Type = type.Result, Dimensions = dim }, false);
 		}
 
-		private ParseResult<Statement> parseAssign(Expression lhs)
+		private ParseResult<IStatement> parseAssign(IExpression lhs)
 		{
 			var op = next().Type;
 			var rhs = parseExprList();
 			var a = new Assign { Op = op, Left = lhs, Right = rhs.Result };
-			return new ParseResult<Statement>(a, false);
+			return new ParseResult<IStatement>(a, false);
 		}
 
-		private ParseResult<Expression> parseBinopRHS(int exprPrec, Expression lhs)
+		private ParseResult<IExpression> parseBinopRHS(int exprPrec, IExpression lhs)
 		{
 			while (true)
 			{
@@ -182,7 +182,7 @@ namespace Minet.Compiler
 				// current operator then consume it, otherwise we're done.
 				if (tokPrec < exprPrec)
 				{
-					return new ParseResult<Expression>(lhs, false);
+					return new ParseResult<IExpression>(lhs, false);
 				}
 
 				var op = next();
@@ -204,19 +204,19 @@ namespace Minet.Compiler
 			}
 		}
 
-		private ParseResult<Expression> parseBlankExpr()
+		private ParseResult<IExpression> parseBlankExpr()
 		{
 			next(); // eat _
-			return new ParseResult<Expression>(new Blank(), false);
+			return new ParseResult<IExpression>(new Blank(), false);
 		}
 
-		private ParseResult<Expression> parseBoolExpr()
+		private ParseResult<IExpression> parseBoolExpr()
 		{
 			var b = new Bool { Val = (next().Type == TokenType.True) };
-			return new ParseResult<Expression>(b, false);
+			return new ParseResult<IExpression>(b, false);
 		}
 
-		private ParseResult<Expression> parseBracketExpr()
+		private ParseResult<IExpression> parseBracketExpr()
 		{
 			var ex = parseMLExprList(TokenType.LeftBracket, TokenType.RightBracket);
 			if (ex.Error) { return ex; }
@@ -225,15 +225,15 @@ namespace Minet.Compiler
 				var type = parseType();
 				if (type.Error)
 				{
-					return new ParseResult<Expression>(type.Result as Expression, true);
+					return new ParseResult<IExpression>(type.Result as IExpression, true);
 				}
 				var ac = new ArrayCons { Type = type.Result, Size = ex.Result };
-				return new ParseResult<Expression>(ac, false);
+				return new ParseResult<IExpression>(ac, false);
 			}
-			return new ParseResult<Expression>(new ArrayValueList { Vals = ex.Result }, false);
+			return new ParseResult<IExpression>(new ArrayValueList { Vals = ex.Result }, false);
 		}
 
-		private ParseResult<Statement> parseBreak()
+		private ParseResult<IStatement> parseBreak()
 		{
 			next(); // eat break
 			var b = new Break();
@@ -242,23 +242,23 @@ namespace Minet.Compiler
 			res = accept(TokenType.EOL);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in break: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in break: " + res.LastToken);
 			}
-			return new ParseResult<Statement>(b, false);
+			return new ParseResult<IStatement>(b, false);
 		}
 
-		private ParseResult<Expression> parseCharExpr()
+		private ParseResult<IExpression> parseCharExpr()
 		{
 			var c = new AST.Char { Val = next().Val };
-			return new ParseResult<Expression>(c, false);
+			return new ParseResult<IExpression>(c, false);
 		}
 
-		private ParseResult<Statement> parseClass(bool pub)
+		private ParseResult<IStatement> parseClass(bool pub)
 		{
 			var res = accept(TokenType.Identifier);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in class declaration: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in class declaration: " + res.LastToken);
 			}
 			var c = new Class { Name = res[0].Val, Public = pub };
 
@@ -269,7 +269,7 @@ namespace Minet.Compiler
 					res = accept(TokenType.Identifier);
 					if (!res.Success)
 					{
-						return error<Statement>(true, "Invalid token in class " + c.Name + " type declaration: " + res.LastToken);
+						return error<IStatement>(true, "Invalid token in class " + c.Name + " type declaration: " + res.LastToken);
 					}
 					c.TypeParams.Add(res[0].Val);
 					if (!accept(TokenType.Comma).Success) { break; }
@@ -277,14 +277,14 @@ namespace Minet.Compiler
 				res = accept(TokenType.RightCaret);
 				if (!res.Success)
 				{
-					return error<Statement>(true, "Invalid token in class " + c.Name + " type declaration: " + res.LastToken);
+					return error<IStatement>(true, "Invalid token in class " + c.Name + " type declaration: " + res.LastToken);
 				}
 			}
 
 			res = accept(TokenType.EOL, TokenType.Indent);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in class " + c.Name + " declaration: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in class " + c.Name + " declaration: " + res.LastToken);
 			}
 
 			while (!peek.Type.IsDedentStop())
@@ -295,13 +295,13 @@ namespace Minet.Compiler
 			res = accept(TokenType.Dedent, TokenType.EOL);
 			if (!res.Success)
 			{
-				c.Statements.Add(error<Statement>(true, "Invalid token in class " + c.Name + " declaration: " + res.LastToken).Result);
+				c.Statements.Add(error<IStatement>(true, "Invalid token in class " + c.Name + " declaration: " + res.LastToken).Result);
 			}
 
-			return new ParseResult<Statement>(c, false);
+			return new ParseResult<IStatement>(c, false);
 		}
 
-		private ParseResult<Statement> parseClassStmt()
+		private ParseResult<IStatement> parseClassStmt()
 		{
 			var ps = new PropertySet();
 
@@ -318,11 +318,11 @@ namespace Minet.Compiler
 				var r = accept(TokenType.Identifier);
 				if (!r.Success)
 				{
-					return error<Statement>(true, "Invalid token in class statement: " + r.LastToken);
+					return error<IStatement>(true, "Invalid token in class statement: " + r.LastToken);
 				}
 				string name = r[0].Val;
 
-				Statement type = null;
+				IStatement type = null;
 				if (peek.Type == TokenType.LeftParen)
 				{
 					return parseFunctionDef(dotted, name);
@@ -338,39 +338,39 @@ namespace Minet.Compiler
 			var res = accept(TokenType.EOL);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in class statement: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in class statement: " + res.LastToken);
 			}
 
-			return new ParseResult<Statement>(ps, false);
+			return new ParseResult<IStatement>(ps, false);
 		}
 
-		private ParseResult<Expression> parseConstructor(Expression lhs)
+		private ParseResult<IExpression> parseConstructor(IExpression lhs)
 		{
 			var fc = new Constructor { Type = lhs };
 			fc.Params = parseMLExprList(TokenType.LeftCurly, TokenType.RightCurly).Result;
-			return new ParseResult<Expression>(fc, false);
+			return new ParseResult<IExpression>(fc, false);
 		}
 
-		private ParseResult<Statement> parseDefer()
+		private ParseResult<IStatement> parseDefer()
 		{
 			next(); // eat defer
 			var d = new Defer { Expr = parseExpr().Result };
 			var res = accept(TokenType.EOL);
 			if (!res.Success)
 			{
-				d.Expr = error<Expression>(true, "Invalid token in defer: " + res.LastToken).Result;
+				d.Expr = error<IExpression>(true, "Invalid token in defer: " + res.LastToken).Result;
 			}
-			return new ParseResult<Statement>(d, false);
+			return new ParseResult<IStatement>(d, false);
 		}
 
-		private ParseResult<Expression> parseExpr()
+		private ParseResult<IExpression> parseExpr()
 		{
 			var lhs = parsePrimaryExpr();
 			if (lhs.Error) { return lhs; }
 			return parseBinopRHS(0, lhs.Result);
 		}
 
-		private ParseResult<Expression> parseExprList()
+		private ParseResult<IExpression> parseExprList()
 		{
 			var el = new ExprList();
 			while (true)
@@ -380,25 +380,25 @@ namespace Minet.Compiler
 				if (ex.Error) { break; }
 				if (!accept(TokenType.Comma).Success) { break; }
 			}
-			return new ParseResult<Expression>(el, false);
+			return new ParseResult<IExpression>(el, false);
 		}
 
-		private ParseResult<Statement> parseExprStmt()
+		private ParseResult<IStatement> parseExprStmt()
 		{
 			var ex = parseExprList();
-			Statement assign = null;
+			IStatement assign = null;
 			if (peek.Type.IsAssign()) { assign = parseAssign(ex.Result).Result; }
 			var res = accept(TokenType.EOL);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in expression statement: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in expression statement: " + res.LastToken);
 			}
-			if (assign != null) { return new ParseResult<Statement>(assign, false); }
+			if (assign != null) { return new ParseResult<IStatement>(assign, false); }
 			var es = new ExprStmt { Expr = ex.Result };
-			return new ParseResult<Statement>(es, false);
+			return new ParseResult<IStatement>(es, false);
 		}
 
-		private ParseResult<Statement> parseFile()
+		private ParseResult<IStatement> parseFile()
 		{
 			var f = new File { Name = filename };
 			bool error = false;
@@ -419,15 +419,15 @@ namespace Minet.Compiler
 						f.Statements.Add(parseUse().Result);
 						break;
 					default:
-						f.Statements.Add(error<Statement>(true, "Invalid token " + peek).Result);
+						f.Statements.Add(error<IStatement>(true, "Invalid token " + peek).Result);
 						error = true;
 						break;
 				}
 			}
-			return new ParseResult<Statement>(f, error);
+			return new ParseResult<IStatement>(f, error);
 		}
 
-		private ParseResult<Statement> parseFor(string label)
+		private ParseResult<IStatement> parseFor(string label)
 		{
 			next(); // eat for
 			AcceptResult res;
@@ -437,11 +437,11 @@ namespace Minet.Compiler
 			var par = parseVarTypeDeclaration();
 			if (par.Result.Count == 0)
 			{
-				return error<Statement>(true, "No variable specified for for loop.");
+				return error<IStatement>(true, "No variable specified for for loop.");
 			}
 			else if (par.Error)
 			{
-				return new ParseResult<Statement>(par.Result[par.Result.Count - 1], true);
+				return new ParseResult<IStatement>(par.Result[par.Result.Count - 1], true);
 			}
 
 			foreach (Variable v in par.Result) { f.Vars.Add(v); }
@@ -449,20 +449,20 @@ namespace Minet.Compiler
 			res = accept(TokenType.In);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in for: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in for: " + res.LastToken);
 			}
 
 			var inExpr = parseExpr();
 			if (inExpr.Error)
 			{
-				return new ParseResult<Statement>(inExpr.Result as Statement, true);
+				return new ParseResult<IStatement>(inExpr.Result as IStatement, true);
 			}
 			f.In = inExpr.Result;
 
 			res = accept(TokenType.EOL, TokenType.Indent);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in for: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in for: " + res.LastToken);
 			}
 
 			while (!peek.Type.IsDedentStop())
@@ -473,13 +473,13 @@ namespace Minet.Compiler
 			res = accept(TokenType.Dedent, TokenType.EOL);
 			if (!res.Success)
 			{
-				f.Statements.Add(error<Statement>(true, "Invalid token in for: " + res.LastToken).Result);
+				f.Statements.Add(error<IStatement>(true, "Invalid token in for: " + res.LastToken).Result);
 			}
 
-			return new ParseResult<Statement>(f, false);
+			return new ParseResult<IStatement>(f, false);
 		}
 
-		private ParseResult<Statement> parseForOrLoop(string label)
+		private ParseResult<IStatement> parseForOrLoop(string label)
 		{
 			switch (peek.Type)
 			{
@@ -488,37 +488,37 @@ namespace Minet.Compiler
 				case TokenType.Loop:
 					return parseLoop(label);
 				default:
-					return error<Statement>(true, "Invalid token in for or loop:" + peek);
+					return error<IStatement>(true, "Invalid token in for or loop:" + peek);
 			}
 		}
 
-		private ParseResult<Expression> parseFunctionCall(Expression lhs)
+		private ParseResult<IExpression> parseFunctionCall(IExpression lhs)
 		{
 			var fc = new FunctionCall { Function = lhs };
 			fc.Params = parseMLExprList(TokenType.LeftParen, TokenType.RightParen).Result;
-			return new ParseResult<Expression>(fc, false);
+			return new ParseResult<IExpression>(fc, false);
 		}
 
-		private ParseResult<Statement> parseFunctionDef(bool dotted, string name)
+		private ParseResult<IStatement> parseFunctionDef(bool dotted, string name)
 		{
 			var res = accept(TokenType.LeftParen);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in function definition: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in function definition: " + res.LastToken);
 			}
 			var fn = new FunctionDef { Static = !dotted, Name = name };
 
 			var par = parseVarTypeDeclaration();
 			if (par.Error)
 			{
-				return new ParseResult<Statement>(par.Result[par.Result.Count - 1], true);
+				return new ParseResult<IStatement>(par.Result[par.Result.Count - 1], true);
 			}
 			foreach (Variable v in par.Result) { fn.Params.Add(v); }
 
 			res = accept(TokenType.RightParen);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in function definition: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in function definition: " + res.LastToken);
 			}
 
 			// return value(s)
@@ -527,7 +527,7 @@ namespace Minet.Compiler
 			res = accept(TokenType.EOL, TokenType.Indent);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in function definition: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in function definition: " + res.LastToken);
 			}
 
 			while (!peek.Type.IsDedentStop())
@@ -538,23 +538,23 @@ namespace Minet.Compiler
 			res = accept(TokenType.Dedent, TokenType.EOL);
 			if (!res.Success)
 			{
-				fn.Statements.Add(error<Statement>(true, "Invalid token in function definition: " + res.LastToken).Result);
+				fn.Statements.Add(error<IStatement>(true, "Invalid token in function definition: " + res.LastToken).Result);
 			}
 
 			// If it's an anonymous function and we're not in the middle of a block
 			// (followed by either ',' or ')' ) then put the EOL back.
 			if (string.IsNullOrEmpty(name) && !peek.Type.IsInBlock()) { backup(1); }
 
-			return new ParseResult<Statement>(fn, false);
+			return new ParseResult<IStatement>(fn, false);
 		}
 
-		private ParseResult<Statement> parseFunctionSig()
+		private ParseResult<IStatement> parseFunctionSig()
 		{
 			var func = new FunctionSig();
 
 			// fn(types)
 			var res = accept(TokenType.Function, TokenType.LeftParen);
-			if (!res.Success) { return error<Statement>(true, "Invalid token in function type: " + res.LastToken); }
+			if (!res.Success) { return error<IStatement>(true, "Invalid token in function type: " + res.LastToken); }
 			while (peek.Type != TokenType.RightParen)
 			{
 				var type = parseType();
@@ -567,7 +567,7 @@ namespace Minet.Compiler
 						break;
 					case TokenType.RightParen: break;
 					default:
-						return error<Statement>(true, "Invalid token in function type: " + peek);
+						return error<IStatement>(true, "Invalid token in function type: " + peek);
 				}
 			}
 			next(); // eat )
@@ -575,10 +575,10 @@ namespace Minet.Compiler
 			// return value(s)
 			func.Returns = parseReturnValues().Result;
 
-			return new ParseResult<Statement>(func, false);
+			return new ParseResult<IStatement>(func, false);
 		}
 
-		private ParseResult<Statement> parseFunctionStmt()
+		private ParseResult<IStatement> parseFunctionStmt()
 		{
 			switch (peek.Type)
 			{
@@ -602,7 +602,7 @@ namespace Minet.Compiler
 			}
 		}
 
-		private ParseResult<T> parseIdentifier<T>() where T : class, General
+		private ParseResult<T> parseIdentifier<T>() where T : class, IGeneral
 		{
 			var id = new Identifier();
 			while (true)
@@ -633,27 +633,27 @@ namespace Minet.Compiler
 			return new ParseResult<T>(id as T, false);
 		}
 
-		private ParseResult<Statement> parseIf()
+		private ParseResult<IStatement> parseIf()
 		{
 			next(); // eat if
-			Expression cond = null;
+			IExpression cond = null;
 			if (peek.Type != TokenType.EOL && peek.Type != TokenType.With)
 			{
 				var condRes = parseExpr();
 				if (condRes.Error)
 				{
-					return new ParseResult<Statement>(condRes.Result as Statement, true);
+					return new ParseResult<IStatement>(condRes.Result as IStatement, true);
 				}
 				cond = condRes.Result;
 			}
 
-			Statement with = null;
+			IStatement with = null;
 			if (accept(TokenType.With).Success) { with = parseVarLine(false).Result; }
 
 			var res = accept(TokenType.EOL, TokenType.Indent);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in if: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in if: " + res.LastToken);
 			}
 
 			var ifs = new If { Condition = cond, With = with };
@@ -665,26 +665,26 @@ namespace Minet.Compiler
 			res = accept(TokenType.Dedent, TokenType.EOL);
 			if (!res.Success)
 			{
-				ifs.Statements.Add(error<Statement>(true, "Invalid token in if: " + res.LastToken).Result);
+				ifs.Statements.Add(error<IStatement>(true, "Invalid token in if: " + res.LastToken).Result);
 			}
 
-			return new ParseResult<Statement>(ifs, false);
+			return new ParseResult<IStatement>(ifs, false);
 		}
 
-		private ParseResult<Statement> parseIfInnerStmt()
+		private ParseResult<IStatement> parseIfInnerStmt()
 		{
 			if (peek.Type == TokenType.Is) { return parseIs(); }
 			return parseFunctionStmt();
 		}
 
-		private ParseResult<Statement> parseIs()
+		private ParseResult<IStatement> parseIs()
 		{
 			next(); // eat is
 			var cond = parseExprList();
 			var res = accept(TokenType.EOL, TokenType.Indent);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in is: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in is: " + res.LastToken);
 			}
 
 			var iss = new Is { Condition = cond.Result };
@@ -696,18 +696,18 @@ namespace Minet.Compiler
 			res = accept(TokenType.Dedent, TokenType.EOL);
 			if (!res.Success)
 			{
-				iss.Statements.Add(error<Statement>(true, "Invalid token in is: " + res.LastToken).Result);
+				iss.Statements.Add(error<IStatement>(true, "Invalid token in is: " + res.LastToken).Result);
 			}
 
-			return new ParseResult<Statement>(iss, false);
+			return new ParseResult<IStatement>(iss, false);
 		}
 
-		private ParseResult<Statement> parseLoop(string label)
+		private ParseResult<IStatement> parseLoop(string label)
 		{
 			var res = accept(TokenType.Loop, TokenType.EOL, TokenType.Indent);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in loop: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in loop: " + res.LastToken);
 			}
 
 			var l = new Loop { Label = label };
@@ -720,20 +720,20 @@ namespace Minet.Compiler
 			res = accept(TokenType.Dedent, TokenType.EOL);
 			if (!res.Success)
 			{
-				l.Statements.Add(error<Statement>(true, "Invalid token in loop: " + res.LastToken).Result);
+				l.Statements.Add(error<IStatement>(true, "Invalid token in loop: " + res.LastToken).Result);
 			}
 
-			return new ParseResult<Statement>(l, false);
+			return new ParseResult<IStatement>(l, false);
 		}
 
-		private ParseResult<Expression> parseMLExprList(TokenType start, TokenType end)
+		private ParseResult<IExpression> parseMLExprList(TokenType start, TokenType end)
 		{
 			var el = new ExprList();
 			var res = accept(start);
 			if (!res.Success)
 			{
-				el.Expressions.Add(error<Expression>(true, "Invalid token in expression list: " + res.LastToken).Result);
-				return new ParseResult<Expression>(el, true);
+				el.Expressions.Add(error<IExpression>(true, "Invalid token in expression list: " + res.LastToken).Result);
+				return new ParseResult<IExpression>(el, true);
 			}
 			if (peek.Type != end)
 			{
@@ -748,7 +748,7 @@ namespace Minet.Compiler
 						res = accept(TokenType.Comma);
 						if (!res.Success)
 						{
-							el.Expressions.Add(error<Expression>(true, "Invalid token in expression list: " + res.LastToken).Result);
+							el.Expressions.Add(error<IExpression>(true, "Invalid token in expression list: " + res.LastToken).Result);
 							break;
 						}
 						accept(TokenType.EOL); // eat EOL if it's there
@@ -760,7 +760,7 @@ namespace Minet.Compiler
 					if (ex.Error)
 					{
 						el.Expressions.Add(ex.Result);
-						return new ParseResult<Expression>(el, true);
+						return new ParseResult<IExpression>(el, true);
 					}
 					el = ex.Result as ExprList;
 				}
@@ -768,49 +768,49 @@ namespace Minet.Compiler
 			res = accept(end);
 			if (!res.Success)
 			{
-				el.Expressions.Add(error<Expression>(true, "Invalid token in expression list: " + res.LastToken).Result);
+				el.Expressions.Add(error<IExpression>(true, "Invalid token in expression list: " + res.LastToken).Result);
 			}
-			return new ParseResult<Expression>(el, false);
+			return new ParseResult<IExpression>(el, false);
 		}
 
-		private ParseResult<Statement> parseNamespace()
+		private ParseResult<IStatement> parseNamespace()
 		{
 			var res = accept(TokenType.Namespace);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in namespace: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in namespace: " + res.LastToken);
 			}
-			var id = parseIdentifier<Statement>();
+			var id = parseIdentifier<IStatement>();
 			var ns = new Namespace { Name = id.Result as Identifier };
 			res = accept(TokenType.EOL);
 			if (!res.Success)
 			{
-				return error<Statement>(true, "Invalid token in namespace: " + res.LastToken);
+				return error<IStatement>(true, "Invalid token in namespace: " + res.LastToken);
 			}
-			return new ParseResult<Statement>(ns, false);
+			return new ParseResult<IStatement>(ns, false);
 		}
 
-		private ParseResult<Expression> parseNumberExpr()
+		private ParseResult<IExpression> parseNumberExpr()
 		{
 			var n = new Number { Val = next().Val };
-			return new ParseResult<Expression>(n, false);
+			return new ParseResult<IExpression>(n, false);
 		}
 
-		private ParseResult<Expression> parseParenExpr()
+		private ParseResult<IExpression> parseParenExpr()
 		{
 			next(); // eat (
 			var expr = parseExpr();
 			var res = accept(TokenType.RightParen);
 			if (!res.Success)
 			{
-				return error<Expression>(true, "Invalid token in (): " + res.LastToken);
+				return error<IExpression>(true, "Invalid token in (): " + res.LastToken);
 			}
 			return expr;
 		}
 
-		private ParseResult<Expression> parsePrimaryExpr()
+		private ParseResult<IExpression> parsePrimaryExpr()
 		{
-			Expression lhs = null;
+			IExpression lhs = null;
 			switch (peek.Type)
 			{
 				case TokenType.Blank:
@@ -823,7 +823,7 @@ namespace Minet.Compiler
 					lhs = parseAnonFuncExpr().Result;
 					break;
 				case TokenType.Identifier:
-					lhs = parseIdentifier<Expression>().Result;
+					lhs = parseIdentifier<IExpression>().Result;
 					break;
 				case TokenType.LeftBracket:
 					lhs = parseBracketExpr().Result;
@@ -863,12 +863,12 @@ namespace Minet.Compiler
 							break;
 					}
 				}
-				return new ParseResult<Expression>(lhs, false);
+				return new ParseResult<IExpression>(lhs, false);
 			}
-			return error<Expression>(true, "Token is not an expression: " + peek);
+			return error<IExpression>(true, "Token is not an expression: " + peek);
 		}
 
-		private ParseResult<Statement> parseReturn()
+		private ParseResult<IStatement> parseReturn()
 		{
 			next(); // eat ret
 			var r = new Return();
@@ -876,14 +876,14 @@ namespace Minet.Compiler
 			var res = accept(TokenType.EOL);
 			if (!res.Success)
 			{
-				r.Vals = error<Expression>(true, "Invalid token in return: " + res.LastToken).Result;
+				r.Vals = error<IExpression>(true, "Invalid token in return: " + res.LastToken).Result;
 			}
-			return new ParseResult<Statement>(r, false);
+			return new ParseResult<IStatement>(r, false);
 		}
 
-		private ParseResult<List<Statement>> parseReturnValues()
+		private ParseResult<List<IStatement>> parseReturnValues()
 		{
-			var rvs = new List<Statement>();
+			var rvs = new List<IStatement>();
 
 			if (nextIsType) { rvs.Add(parseType().Result); }
 			else if (peek.Type == TokenType.LeftParen)
@@ -899,36 +899,36 @@ namespace Minet.Compiler
 							break;
 						case TokenType.RightParen: break;
 						default:
-							rvs.Add(error<Statement>(true, "Invalid token in return types: " + peek).Result);
-							return new ParseResult<List<Statement>>(rvs, true);
+							rvs.Add(error<IStatement>(true, "Invalid token in return types: " + peek).Result);
+							return new ParseResult<List<IStatement>>(rvs, true);
 					}
 				}
 				next(); // eat )
 			}
 
-			return new ParseResult<List<Statement>>(rvs, false);
+			return new ParseResult<List<IStatement>>(rvs, false);
 		}
 
-		private ParseResult<Expression> parseStringExpr()
+		private ParseResult<IExpression> parseStringExpr()
 		{
 			var s = new AST.String { Val = next().Val };
-			return new ParseResult<Expression>(s, false);
+			return new ParseResult<IExpression>(s, false);
 		}
 
-		private ParseResult<Statement> parseTopLevelIdentifier()
+		private ParseResult<IStatement> parseTopLevelIdentifier()
 		{
 			var res = accept(TokenType.Identifier, TokenType.Dot);
-			if (!res.Success) { return error<Statement>(true, "Invalid token in top-level statement: " + res.LastToken); }
+			if (!res.Success) { return error<IStatement>(true, "Invalid token in top-level statement: " + res.LastToken); }
 			switch (res[0].Val.ToLower())
 			{
 				case "c":
 					return parseClass(res[0].Val == "C");
 				default:
-					return error<Statement>(true, "Invalid type identifier in top-level statement: " + res[0].Val);
+					return error<IStatement>(true, "Invalid type identifier in top-level statement: " + res[0].Val);
 			}
 		}
 
-		private ParseResult<Statement> parseType()
+		private ParseResult<IStatement> parseType()
 		{
 			switch (peek.Type)
 			{
@@ -937,21 +937,21 @@ namespace Minet.Compiler
 				case TokenType.Function:
 					return parseFunctionSig();
 				case TokenType.Identifier:
-					return parseIdentifier<Statement>();
+					return parseIdentifier<IStatement>();
 				default:
-					return error<Statement>(true, "Invalid token in type: " + peek);
+					return error<IStatement>(true, "Invalid token in type: " + peek);
 			}
 		}
 
-		private ParseResult<Expression> parseUnaryExpr()
+		private ParseResult<IExpression> parseUnaryExpr()
 		{
 			var op = next().Type;
 			var ex = parsePrimaryExpr();
 			var un = new Unary { Expr = ex.Result, Op = op };
-			return new ParseResult<Expression>(un, false);
+			return new ParseResult<IExpression>(un, false);
 		}
 
-		private ParseResult<Statement> parseUse()
+		private ParseResult<IStatement> parseUse()
 		{
 			next(); // eat use
 			var pack = parseUsePackage();
@@ -969,27 +969,27 @@ namespace Minet.Compiler
 				}
 				if (accept(TokenType.Dedent, TokenType.EOL).Success)
 				{
-					return new ParseResult<Statement>(use, false);
+					return new ParseResult<IStatement>(use, false);
 				}
-				return error<Statement>(true, "Invalid token in use: " + peek);
+				return error<IStatement>(true, "Invalid token in use: " + peek);
 			}
 
-			return new ParseResult<Statement>(use, false);
+			return new ParseResult<IStatement>(use, false);
 		}
 
-		private ParseResult<Statement> parseUsePackage()
+		private ParseResult<IStatement> parseUsePackage()
 		{
-			var ident = parseIdentifier<Statement>();
+			var ident = parseIdentifier<IStatement>();
 			if (ident.Error) { return ident; }
 			var asRes = accept(TokenType.As, TokenType.Identifier);
 			var res = accept(TokenType.EOL);
-			if (!res.Success) { return error<Statement>(true, "Invalid token in use: " + res.LastToken); }
+			if (!res.Success) { return error<IStatement>(true, "Invalid token in use: " + res.LastToken); }
 			var pack = new UsePackage { Pack = ident.Result as Identifier };
 			if (asRes.Success) { pack.Alias = asRes[1].Val; }
-			return new ParseResult<Statement>(pack, false);
+			return new ParseResult<IStatement>(pack, false);
 		}
 
-		private ParseResult<Statement> parseVar()
+		private ParseResult<IStatement> parseVar()
 		{
 			next(); // eat var
 			var vs = new VarSet();
@@ -1010,25 +1010,25 @@ namespace Minet.Compiler
 				var res = accept(TokenType.Dedent, TokenType.EOL);
 				if (!res.Success)
 				{
-					return error<Statement>(true, "Invalid token in var statement: " + res.LastToken);
+					return error<IStatement>(true, "Invalid token in var statement: " + res.LastToken);
 				}
 			}
 
-			return new ParseResult<Statement>(vs, false);
+			return new ParseResult<IStatement>(vs, false);
 		}
 
-		private ParseResult<Statement> parseVarLine(bool eatEOL)
+		private ParseResult<IStatement> parseVarLine(bool eatEOL)
 		{
 			var v = new VarSetLine();
 
 			var vars = parseVarTypeDeclaration();
 			if (vars.Result.Count == 0)
 			{
-				return error<Statement>(true, "No variables specified after var.");
+				return error<IStatement>(true, "No variables specified after var.");
 			}
 			else if (vars.Error)
 			{
-				return new ParseResult<Statement>(vars.Result[vars.Result.Count - 1], true);
+				return new ParseResult<IStatement>(vars.Result[vars.Result.Count - 1], true);
 			}
 			foreach (Variable va in vars.Result) { v.Vars.Add(va); }
 
@@ -1039,23 +1039,23 @@ namespace Minet.Compiler
 				var res = accept(TokenType.EOL);
 				if (!res.Success)
 				{
-					return error<Statement>(true, "Invalid token in var statement: " + res.LastToken);
+					return error<IStatement>(true, "Invalid token in var statement: " + res.LastToken);
 				}
 			}
-			return new ParseResult<Statement>(v, false);
+			return new ParseResult<IStatement>(v, false);
 		}
 
-		private ParseResult<List<Statement>> parseVarTypeDeclaration()
+		private ParseResult<List<IStatement>> parseVarTypeDeclaration()
 		{
-			var parameters = new List<Statement>();
+			var parameters = new List<IStatement>();
 			while (peek.Type == TokenType.Identifier || peek.Type == TokenType.Blank)
 			{
 				string pName = next().Val;
-				Statement type = nextIsType ? parseType().Result : null;
+				IStatement type = nextIsType ? parseType().Result : null;
 				parameters.Add(new Variable { Name = pName, Type = type });
 				if (!accept(TokenType.Comma).Success) { break; }
 			}
-			return new ParseResult<List<Statement>>(parameters, false);
+			return new ParseResult<List<IStatement>>(parameters, false);
 		}
 	}
 

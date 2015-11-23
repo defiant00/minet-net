@@ -1,32 +1,14 @@
-﻿using System;
+﻿using Minet.Compiler.AST;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Minet.Compiler.FAST
 {
-	public interface IType { }
-
 	public interface ITypeContainer
 	{
 		Class GetClass(Assembly asm, string ns, string name, bool pub);
-	}
-
-	public class ArrayType : IType
-	{
-		public IType Type;
-		public int Dimensions;
-
-		public override string ToString()
-		{
-			string ret = "[";
-			for (int i = 1; i < Dimensions; i++)
-			{
-				ret += ",";
-			}
-			ret += "]" + Type;
-			return ret;
-		}
 	}
 
 	public class Assembly : ITypeContainer
@@ -67,8 +49,8 @@ namespace Minet.Compiler.FAST
 	public class Class : ITypeContainer
 	{
 		public string Name, FullName;
-		public List<Function> Functions = new List<Function>();
 		public List<Class> Classes = new List<Class>();
+		public List<Field> Fields = new List<Field>();
 		public TypeBuilder TypeBuilder;
 		public TypeAttributes Access { get; private set; }
 
@@ -107,41 +89,36 @@ namespace Minet.Compiler.FAST
 		}
 	}
 
-	public class Function
+	public class Constant : Field
 	{
-		public bool Static;
-		public string Name;
-		public List<Variable> Parameters;
-		public List<IType> Returns = new List<IType>();
+		public Constant(Property p, WalkState ws) : base(p, ws) { }
 
-		public Function(bool stat, string name, List<Variable> pars)
+		public override void CreateField(Class c)
 		{
-			Static = stat;
-			Name = name;
-			Parameters = pars;
+			var fb = c.TypeBuilder.DefineField(Name, Type, Accessibility | FieldAttributes.Literal | FieldAttributes.Static);
+			fb.SetConstant("hello");
 		}
 	}
 
-	public class FunctionType : IType
-	{
-		public override string ToString() { return "fn()"; }
-	}
-
-	public class GenType : IType
-	{
-		public string Identifier;
-
-		public override string ToString() { return Identifier; }
-	}
-
-	public class UsePackage
-	{
-		public string Package, Alias;
-	}
-
-	public class Variable
+	public class Field
 	{
 		public string Name;
-		public IType Type;
+		public Type Type;
+
+		public FieldAttributes Accessibility
+		{
+			get { return char.IsUpper(Name[0]) ? FieldAttributes.Public : FieldAttributes.Private; }
+		}
+
+		public Field(Property p, WalkState ws)
+		{
+			Name = p.Name;
+			Type = p.Type.ToFASTType(ws);
+		}
+
+		public virtual void CreateField(Class c)
+		{
+			c.TypeBuilder.DefineField(Name, Type, Accessibility);
+		}
 	}
 }

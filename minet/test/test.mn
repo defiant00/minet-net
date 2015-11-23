@@ -1,8 +1,13 @@
 ns MTest
 
 C.MinetTest
+	StringThing, AnotherString string = "dood", "ha"
+	.numThing i32
+	.I64Thing i64
+	._privateThing u8
 	c.SubClass
 		C.PublicSub
+			Thing string
 			dood()
 				_
 	Main()

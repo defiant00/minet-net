@@ -2,133 +2,133 @@
 
 namespace Minet.Compiler.AST
 {
-	public interface General
+	public interface IGeneral
 	{
 		void Print(int indent);
 	}
 
-	public interface Expression : General { }
-	public interface Statement : General { }
+	public interface IExpression : IGeneral { }
+	public interface IStatement : IGeneral { }
 
-	public partial class Accessor : Expression
+	public partial class Accessor : IExpression
 	{
-		public Expression Object, Index;
+		public IExpression Object, Index;
 	}
 
-	public partial class Array : Statement
+	public partial class Array : IStatement
 	{
-		public Statement Type;
+		public IStatement Type;
 		public int Dimensions;
 	}
 
-	public partial class ArrayCons : Expression
+	public partial class ArrayCons : IExpression
 	{
-		public Statement Type;
-		public Expression Size;
+		public IStatement Type;
+		public IExpression Size;
 	}
 
-	public partial class ArrayValueList : Expression
+	public partial class ArrayValueList : IExpression
 	{
-		public Expression Vals;
+		public IExpression Vals;
 	}
 
-	public partial class Assign : Statement
+	public partial class Assign : IStatement
 	{
-		public Expression Left, Right;
+		public IExpression Left, Right;
 		public TokenType Op;
 	}
 
-	public partial class Binary : Expression
+	public partial class Binary : IExpression
 	{
-		public Expression Left, Right;
+		public IExpression Left, Right;
 		public TokenType Op;
 	}
 
-	public partial class Blank : Expression { }
+	public partial class Blank : IExpression { }
 
-	public partial class Bool : Expression
+	public partial class Bool : IExpression
 	{
 		public bool Val;
 	}
 
-	public partial class Break : Statement
+	public partial class Break : IStatement
 	{
 		public string Label;
 	}
 
-	public partial class Char : Expression
+	public partial class Char : IExpression
 	{
 		public string Val;
 	}
 
-	public partial class Class : Statement
+	public partial class Class : IStatement
 	{
 		public string Name;
 		public bool Public;
 		public List<string> TypeParams = new List<string>();
-		public List<Statement> Statements = new List<Statement>();
+		public List<IStatement> Statements = new List<IStatement>();
 	}
 
-	public partial class Constructor : Expression
+	public partial class Constructor : IExpression
 	{
-		public Expression Type, Params;
+		public IExpression Type, Params;
 	}
 
-	public partial class Defer : Statement
+	public partial class Defer : IStatement
 	{
-		public Expression Expr;
+		public IExpression Expr;
 	}
 
-	public partial class Error : Expression, Statement
+	public partial class Error : IExpression, IStatement
 	{
 		public string Val;
 	}
 
-	public partial class ExprList : Expression
+	public partial class ExprList : IExpression
 	{
-		public List<Expression> Expressions = new List<Expression>();
+		public List<IExpression> Expressions = new List<IExpression>();
 	}
 
-	public partial class ExprStmt : Statement
+	public partial class ExprStmt : IStatement
 	{
-		public Expression Expr;
+		public IExpression Expr;
 	}
 
-	public partial class File : Statement
+	public partial class File : IStatement
 	{
 		public string Name;
-		public List<Statement> Statements = new List<Statement>();
+		public List<IStatement> Statements = new List<IStatement>();
 	}
 
-	public partial class For : Statement
+	public partial class For : IStatement
 	{
 		public string Label;
 		public List<Variable> Vars = new List<Variable>();
-		public Expression In;
-		public List<Statement> Statements = new List<Statement>();
+		public IExpression In;
+		public List<IStatement> Statements = new List<IStatement>();
 	}
 
-	public partial class FunctionCall : Expression
+	public partial class FunctionCall : IExpression
 	{
-		public Expression Function, Params;
+		public IExpression Function, Params;
 	}
 
-	public partial class FunctionDef : Expression, Statement
+	public partial class FunctionDef : IExpression, IStatement
 	{
 		public bool Static;
 		public string Name;
 		public List<Variable> Params = new List<Variable>();
-		public List<Statement> Returns = new List<Statement>();
-		public List<Statement> Statements = new List<Statement>();
+		public List<IStatement> Returns = new List<IStatement>();
+		public List<IStatement> Statements = new List<IStatement>();
 	}
 
-	public partial class FunctionSig : Expression, Statement
+	public partial class FunctionSig : IExpression, IStatement
 	{
-		public List<Statement> Params = new List<Statement>();
-		public List<Statement> Returns = new List<Statement>();
+		public List<IStatement> Params = new List<IStatement>();
+		public List<IStatement> Returns = new List<IStatement>();
 	}
 
-	public partial class Identifier : Expression, Statement
+	public partial class Identifier : IExpression, IStatement
 	{
 		public List<IdentPart> Idents = new List<IdentPart>();
 	}
@@ -136,34 +136,34 @@ namespace Minet.Compiler.AST
 	public partial class IdentPart
 	{
 		public string Name;
-		public List<Statement> TypeParams = new List<Statement>();
+		public List<IStatement> TypeParams = new List<IStatement>();
 	}
 
-	public partial class If : Statement
+	public partial class If : IStatement
 	{
-		public Expression Condition;
-		public Statement With;
-		public List<Statement> Statements = new List<Statement>();
+		public IExpression Condition;
+		public IStatement With;
+		public List<IStatement> Statements = new List<IStatement>();
 	}
 
-	public partial class Is : Statement
+	public partial class Is : IStatement
 	{
-		public Expression Condition;
-		public List<Statement> Statements = new List<Statement>();
+		public IExpression Condition;
+		public List<IStatement> Statements = new List<IStatement>();
 	}
 
-	public partial class Loop : Statement
+	public partial class Loop : IStatement
 	{
 		public string Label;
-		public List<Statement> Statements = new List<Statement>();
+		public List<IStatement> Statements = new List<IStatement>();
 	}
 
-	public partial class Namespace : Statement
+	public partial class Namespace : IStatement
 	{
 		public Identifier Name;
 	}
 
-	public partial class Number : Expression
+	public partial class Number : IExpression
 	{
 		public string Val;
 	}
@@ -172,56 +172,56 @@ namespace Minet.Compiler.AST
 	{
 		public bool Static;
 		public string Name;
-		public Statement Type;
+		public IStatement Type;
 	}
 
-	public partial class PropertySet : Statement
+	public partial class PropertySet : IStatement
 	{
 		public List<Property> Props = new List<Property>();
-		public Expression Vals;
+		public IExpression Vals;
 	}
 
-	public partial class Return : Statement
+	public partial class Return : IStatement
 	{
-		public Expression Vals;
+		public IExpression Vals;
 	}
 
-	public partial class String : Expression
+	public partial class String : IExpression
 	{
 		public string Val;
 	}
 
-	public partial class Unary : Expression
+	public partial class Unary : IExpression
 	{
-		public Expression Expr;
+		public IExpression Expr;
 		public TokenType Op;
 	}
 
-	public partial class Use : Statement
+	public partial class Use : IStatement
 	{
 		public List<UsePackage> Packages = new List<UsePackage>();
 	}
 
-	public partial class UsePackage : Statement
+	public partial class UsePackage : IStatement
 	{
 		public Identifier Pack;
 		public string Alias;
 	}
 
-	public partial class Variable : Statement
+	public partial class Variable : IStatement
 	{
 		public string Name;
-		public Statement Type;
+		public IStatement Type;
 	}
 
-	public partial class VarSet : Statement
+	public partial class VarSet : IStatement
 	{
 		public List<VarSetLine> Lines = new List<VarSetLine>();
 	}
 
-	public partial class VarSetLine : Statement
+	public partial class VarSetLine : IStatement
 	{
 		public List<Variable> Vars = new List<Variable>();
-		public Expression Vals;
+		public IExpression Vals;
 	}
 }

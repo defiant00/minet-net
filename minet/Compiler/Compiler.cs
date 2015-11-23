@@ -36,6 +36,7 @@ namespace Minet.Compiler
 				errors = ws.Errors;
 
 				if (errors.Count == 0) { foreach (var a in asts) { a.GenTypes(ws); } }
+				if (errors.Count == 0) { foreach (var a in asts) { a.GenClassItems(ws); } }
 				if (errors.Count == 0) { ws.Assembly.CreateTypes(); }
 				if (errors.Count == 0) { ws.Save(); }
 			}
