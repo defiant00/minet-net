@@ -60,8 +60,6 @@ namespace Minet.Compiler.AST
 						return typeof(float);
 					case "f64":
 						return typeof(double);
-					case "f128":
-						return typeof(decimal);
 					case "i8":
 						return typeof(sbyte);
 					case "i16":

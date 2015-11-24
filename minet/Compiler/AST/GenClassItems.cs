@@ -21,7 +21,6 @@ namespace Minet.Compiler.AST
 					ps.Props.CalcTypeList(ws, "Missing type qualifier in class " + c.Name);
 					if (ws.Errors.Count == 0)
 					{
-						//if (ps.Props.Count > 0 && ps.)
 						foreach (var p in ps.Props)
 						{
 							var prop = p.Static ? new Constant(p, ws) : new FAST.Field(p, ws);
