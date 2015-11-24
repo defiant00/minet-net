@@ -273,8 +273,17 @@ namespace Minet.Compiler
 		private stateFn lexNumber()
 		{
 			for (var c = peek; char.IsDigit(c); c = peek) { next(); }
-			accept(".");
-			for (var c = peek; char.IsDigit(c); c = peek) { next(); }
+			if (accept("."))
+			{
+				bool afterDecimal = false;
+				for (var c = peek; char.IsDigit(c); c = peek)
+				{
+					next();
+					afterDecimal = true;
+				}
+				// Put the decimal back if there are no numbers after it.
+				if (!afterDecimal) { backup(); }
+			}
 			emit(TokenType.Number);
 			return lexStatement;
 		}

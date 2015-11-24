@@ -306,7 +306,7 @@ namespace Minet.Compiler
 			var ps = new PropertySet();
 
 			// Nested class, interface or enum
-			if(accept(TokenType.Identifier, TokenType.Dot).Success)
+			if (accept(TokenType.Identifier, TokenType.Dot).Success)
 			{
 				backup(2);
 				return parseTopLevelIdentifier();
@@ -792,8 +792,15 @@ namespace Minet.Compiler
 
 		private ParseResult<IExpression> parseNumberExpr()
 		{
-			var n = new Number { Val = next().Val };
-			return new ParseResult<IExpression>(n, false);
+			string val = next().Val;
+			if (val.IndexOf('.') > -1)
+			{
+				return new ParseResult<IExpression>(new Float { Val = val }, false);
+			}
+			else
+			{
+				return new ParseResult<IExpression>(new Integer { Val = val }, false);
+			}
 		}
 
 		private ParseResult<IExpression> parseParenExpr()

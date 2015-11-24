@@ -100,6 +100,11 @@ namespace Minet.Compiler.AST
 		public List<IStatement> Statements = new List<IStatement>();
 	}
 
+	public partial class Float : IExpression
+	{
+		public string Val;
+	}
+
 	public partial class For : IStatement
 	{
 		public string Label;
@@ -146,6 +151,11 @@ namespace Minet.Compiler.AST
 		public List<IStatement> Statements = new List<IStatement>();
 	}
 
+	public partial class Integer : IExpression
+	{
+		public string Val;
+	}
+
 	public partial class Is : IStatement
 	{
 		public IExpression Condition;
@@ -163,16 +173,12 @@ namespace Minet.Compiler.AST
 		public Identifier Name;
 	}
 
-	public partial class Number : IExpression
-	{
-		public string Val;
-	}
-
 	public partial class Property
 	{
 		public bool Static;
 		public string Name;
 		public IStatement Type;
+		public System.Type SystemType;
 	}
 
 	public partial class PropertySet : IStatement

@@ -1,50 +1,130 @@
-﻿using Minet.Compiler.FAST;
-using System;
-using System.Collections.Generic;
+﻿using System;
 
 namespace Minet.Compiler.AST
 {
 	public static class Helpers
 	{
-		public static bool CalcTypeList(this List<Variable> list, WalkState ws, string error)
+		public static Type CalcType(this IExpression expr, WalkState ws)
 		{
-			IStatement type = null;
-			for (int i = list.Count - 1; i >= 0; i--)
+			var t = expr.GetType();
+			if (t == typeof(Bool)) { return typeof(bool); }
+			else if (t == typeof(Char)) { return typeof(char); }
+			else if (t == typeof(Float)) { return typeof(float); }
+			else if (t == typeof(Integer)) { return typeof(int); }
+			else if (t == typeof(String)) { return typeof(string); }
+			else
 			{
-				if (list[i].Type == null)
-				{
-					if (type == null)
-					{
-						ws.AddError(error);
-						return false;
-					}
-					else { list[i].Type = type; }
-				}
-				else { type = list[i].Type; }
+				ws.AddError("Unknown type '" + t + "' when calculating type.");
+				return null;
 			}
-			return true;
 		}
 
-		public static bool CalcTypeList(this List<Property> list, WalkState ws, string error)
+		public static bool CalcTypeList(this PropertySet ps, WalkState ws)
 		{
-			IStatement type = null;
-			for (int i = list.Count - 1; i >= 0; i--)
+			Type type = null;
+			for (int i = ps.Props.Count - 1; i >= 0; i--)
 			{
-				if (list[i].Type == null)
+				if (ps.Props[i].Type == null)
 				{
-					if (type == null)
-					{
-						ws.AddError(error);
-						return false;
-					}
-					else { list[i].Type = type; }
+					ps.Props[i].SystemType = type;
 				}
-				else { type = list[i].Type; }
+				else
+				{
+					type = ps.Props[i].Type.ToType(ws);
+					ps.Props[i].SystemType = type;
+				}
 			}
-			return true;
+
+			if (ps.Vals != null)
+			{
+				var el = ps.Vals as ExprList;
+				if (ps.Props.Count == el.Expressions.Count)
+				{
+					for (int i = 0; i < ps.Props.Count; i++)
+					{
+						if (ps.Props[i].SystemType == null)
+						{
+							ps.Props[i].SystemType = el.Expressions[i].CalcType(ws);
+						}
+					}
+				}
+			}
+
+			bool retVal = true;
+			foreach (var p in ps.Props)
+			{
+				if (p.SystemType == null)
+				{
+					ws.AddError("Type could not be determined for " + p.Name);
+					retVal = false;
+				}
+			}
+			return retVal;
 		}
 
-		public static Type ToFASTType(this IStatement type, WalkState ws)
+		public static object GetLiteralVal(this IExpression expr, Type type, WalkState ws)
+		{
+			var t = expr.GetType();
+			if (t == typeof(Bool) && type == typeof(bool))
+			{
+				return (expr as Bool).Val;
+			}
+			else if (t == typeof(Char) && type == typeof(char))
+			{
+				return (expr as Char).Val[0];
+			}
+			else if (t == typeof(Float) && type == typeof(float))
+			{
+				return Convert.ToSingle((expr as Float).Val);
+			}
+			else if (t == typeof(Float) && type == typeof(double))
+			{
+				return Convert.ToDouble((expr as Float).Val);
+			}
+			else if (t == typeof(Integer) && type == typeof(sbyte))
+			{
+				return Convert.ToSByte((expr as Integer).Val);
+			}
+			else if (t == typeof(Integer) && type == typeof(short))
+			{
+				return Convert.ToInt16((expr as Integer).Val);
+			}
+			else if (t == typeof(Integer) && type == typeof(int))
+			{
+				return Convert.ToInt32((expr as Integer).Val);
+			}
+			else if (t == typeof(Integer) && type == typeof(long))
+			{
+				return Convert.ToInt64((expr as Integer).Val);
+			}
+			else if (t == typeof(Integer) && type == typeof(byte))
+			{
+				return Convert.ToByte((expr as Integer).Val);
+			}
+			else if (t == typeof(Integer) && type == typeof(ushort))
+			{
+				return Convert.ToUInt16((expr as Integer).Val);
+			}
+			else if (t == typeof(Integer) && type == typeof(uint))
+			{
+				return Convert.ToUInt32((expr as Integer).Val);
+			}
+			else if (t == typeof(Integer) && type == typeof(ulong))
+			{
+				return Convert.ToUInt64((expr as Integer).Val);
+			}
+			else if (t == typeof(String))
+			{
+				return (expr as String).Val;
+			}
+			else
+			{
+				ws.AddError("Unknown expression '" + t + "' for type '" + type + "' encountered.");
+				return null;
+			}
+		}
+
+		public static Type ToType(this IStatement type, WalkState ws)
 		{
 			var t = type.GetType();
 			if (t == typeof(Identifier))

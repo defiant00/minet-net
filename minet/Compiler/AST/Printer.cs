@@ -195,6 +195,15 @@ namespace Minet.Compiler.AST
 		}
 	}
 
+	public partial class Float
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("float " + Val);
+		}
+	}
+
 	public partial class For
 	{
 		public void Print(int indent)
@@ -318,6 +327,15 @@ namespace Minet.Compiler.AST
 		}
 	}
 
+	public partial class Integer
+	{
+		public void Print(int indent)
+		{
+			Helper.PrintIndent(indent);
+			Console.WriteLine("int " + Val);
+		}
+	}
+
 	public partial class Is
 	{
 		public void Print(int indent)
@@ -347,15 +365,6 @@ namespace Minet.Compiler.AST
 		{
 			Helper.PrintIndent(indent);
 			Console.WriteLine("namespace " + Name);
-		}
-	}
-
-	public partial class Number
-	{
-		public void Print(int indent)
-		{
-			Helper.PrintIndent(indent);
-			Console.WriteLine("number " + Val);
 		}
 	}
 

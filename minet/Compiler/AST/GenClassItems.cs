@@ -15,36 +15,44 @@ namespace Minet.Compiler.AST
 				{
 					(s as Class).GenClassItems(ws, c);
 				}
+				else if (t == typeof(FunctionDef))
+				{
+					c.Functions.Add(new Function(c, s as FunctionDef));
+				}
 				else if (t == typeof(PropertySet))
 				{
 					var ps = s as PropertySet;
-					ps.Props.CalcTypeList(ws, "Missing type qualifier in class " + c.Name);
-					if (ws.Errors.Count == 0)
+					if (ps.CalcTypeList(ws))
 					{
-						foreach (var p in ps.Props)
-						{
-							var prop = p.Static ? new Constant(p, ws) : new FAST.Field(p, ws);
-							prop.CreateField(c);
-							c.Fields.Add(prop);
-						}
-
+						ExprList el = null;
 						if (ps.Vals != null)
 						{
-							var el = ps.Vals as ExprList;
+							el = ps.Vals as ExprList;
 							if (ps.Props.Count != el.Expressions.Count)
 							{
 								ws.AddError("Mismatched property/value counts: " + ps.Props.Count + " != " + el.Expressions.Count);
+								el = null;
 							}
-							else
-							{
+						}
 
+						for (int i = 0; i < ps.Props.Count; i++)
+						{
+							var p = ps.Props[i];
+							var prop = p.Static ? new Constant(p, ws) : new Field(p, ws);
+							prop.CreateField(c);
+							if (el != null)
+							{
+								object val = el.Expressions[i].GetLiteralVal(prop.Type, ws);
+								if (val != null) { prop.SetDefault(val); }
+								// TODO - Do something with default values for fields.
 							}
+							c.Fields.Add(prop);
 						}
 					}
 				}
 				else
 				{
-					//ws.AddError("Unknown class statement: " + t);
+					ws.AddError("Unknown class statement: " + t);
 				}
 			}
 		}
