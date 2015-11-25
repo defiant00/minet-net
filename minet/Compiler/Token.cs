@@ -20,7 +20,6 @@ namespace Minet.Compiler
 		Use,                // 'use'
 		As,                 // 'as'
 		If,                 // 'if'
-		Is,                 // 'is'
 		In,                 // 'in'
 		With,               // 'with'
 		Function,           // 'fn'
@@ -33,6 +32,8 @@ namespace Minet.Compiler
 		Break,              // 'break'
 		True,               // 'true'
 		False,              // 'false'
+		bool_op_start,
+		Is,                 // 'is'
 		Equal,              // '=='
 		NotEqual,           // '!='
 		LeftCaret,          // '<'
@@ -41,6 +42,7 @@ namespace Minet.Compiler
 		GtEqual,            // '>='
 		And,                // 'and'
 		Or,                 // 'or'
+		bool_op_end,
 		Dot,                // '.'
 		Comma,              // ','
 		Colon,              // ':'
@@ -92,6 +94,11 @@ namespace Minet.Compiler
 			return type > TokenType.assign_start && type < TokenType.assign_end;
 		}
 
+		public static bool IsBooleanOp(this TokenType type)
+		{
+			return type > TokenType.bool_op_start && type < TokenType.bool_op_end;
+		}
+
 		public static bool IsInBlock(this TokenType type)
 		{
 			return type == TokenType.Comma || type == TokenType.RightParen;
@@ -115,7 +122,6 @@ namespace Minet.Compiler
 			{"use",     TokenType.Use},
 			{"as",      TokenType.As},
 			{"if",      TokenType.If},
-			{"is",      TokenType.Is},
 			{"in",      TokenType.In},
 			{"with",    TokenType.With},
 			{"fn",      TokenType.Function},
@@ -128,6 +134,7 @@ namespace Minet.Compiler
 			{"break",   TokenType.Break},
 			{"true",    TokenType.True},
 			{"false",   TokenType.False},
+			{"is",      TokenType.Is},
 			{"==",      TokenType.Equal},
 			{"!=",      TokenType.NotEqual},
 			{"<",       TokenType.LeftCaret},
@@ -190,6 +197,7 @@ namespace Minet.Compiler
 				case TokenType.Dot:
 					return 7;
 				case TokenType.As:
+				case TokenType.Is:
 					return 6;
 				case TokenType.Mul:
 				case TokenType.Div:

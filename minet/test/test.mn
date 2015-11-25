@@ -1,8 +1,5 @@
 ns MTest
 
 C.MinetTest
-	.First, .Second = "first", "second"
 	Main()
 		System.Console.WriteLine("Hello from Minet!")
-	.Other()
-		_

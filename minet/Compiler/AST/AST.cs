@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Minet.Compiler.AST
 {
@@ -7,7 +8,11 @@ namespace Minet.Compiler.AST
 		void Print(int indent);
 	}
 
-	public interface IExpression : IGeneral { }
+	public interface IExpression : IGeneral
+	{
+		List<Type> CalcTypes(WalkState ws);
+		object Calculate(WalkState ws);
+	}
 	public interface IStatement : IGeneral { }
 
 	public partial class Accessor : IExpression
@@ -178,7 +183,7 @@ namespace Minet.Compiler.AST
 		public bool Static;
 		public string Name;
 		public IStatement Type;
-		public System.Type SystemType;
+		public Type SystemType;
 	}
 
 	public partial class PropertySet : IStatement

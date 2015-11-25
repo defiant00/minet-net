@@ -4,21 +4,6 @@ namespace Minet.Compiler.AST
 {
 	public static class Helpers
 	{
-		public static Type CalcType(this IExpression expr, WalkState ws)
-		{
-			var t = expr.GetType();
-			if (t == typeof(Bool)) { return typeof(bool); }
-			else if (t == typeof(Char)) { return typeof(char); }
-			else if (t == typeof(Float)) { return typeof(float); }
-			else if (t == typeof(Integer)) { return typeof(int); }
-			else if (t == typeof(String)) { return typeof(string); }
-			else
-			{
-				ws.AddError("Unknown type '" + t + "' when calculating type.");
-				return null;
-			}
-		}
-
 		public static bool CalcTypeList(this PropertySet ps, WalkState ws)
 		{
 			Type type = null;
@@ -37,14 +22,14 @@ namespace Minet.Compiler.AST
 
 			if (ps.Vals != null)
 			{
-				var el = ps.Vals as ExprList;
-				if (ps.Props.Count == el.Expressions.Count)
+				var types = (ps.Vals as ExprList).CalcTypes(ws);
+				if (ps.Props.Count == types.Count)
 				{
 					for (int i = 0; i < ps.Props.Count; i++)
 					{
 						if (ps.Props[i].SystemType == null)
 						{
-							ps.Props[i].SystemType = el.Expressions[i].CalcType(ws);
+							ps.Props[i].SystemType = types[i];
 						}
 					}
 				}
@@ -62,66 +47,35 @@ namespace Minet.Compiler.AST
 			return retVal;
 		}
 
-		public static object GetLiteralVal(this IExpression expr, Type type, WalkState ws)
+		public static object Cast(this Type type, object val, WalkState ws)
 		{
-			var t = expr.GetType();
-			if (t == typeof(Bool) && type == typeof(bool))
-			{
-				return (expr as Bool).Val;
-			}
-			else if (t == typeof(Char) && type == typeof(char))
-			{
-				return (expr as Char).Val[0];
-			}
-			else if (t == typeof(Float) && type == typeof(float))
-			{
-				return Convert.ToSingle((expr as Float).Val);
-			}
-			else if (t == typeof(Float) && type == typeof(double))
-			{
-				return Convert.ToDouble((expr as Float).Val);
-			}
-			else if (t == typeof(Integer) && type == typeof(sbyte))
-			{
-				return Convert.ToSByte((expr as Integer).Val);
-			}
-			else if (t == typeof(Integer) && type == typeof(short))
-			{
-				return Convert.ToInt16((expr as Integer).Val);
-			}
-			else if (t == typeof(Integer) && type == typeof(int))
-			{
-				return Convert.ToInt32((expr as Integer).Val);
-			}
-			else if (t == typeof(Integer) && type == typeof(long))
-			{
-				return Convert.ToInt64((expr as Integer).Val);
-			}
-			else if (t == typeof(Integer) && type == typeof(byte))
-			{
-				return Convert.ToByte((expr as Integer).Val);
-			}
-			else if (t == typeof(Integer) && type == typeof(ushort))
-			{
-				return Convert.ToUInt16((expr as Integer).Val);
-			}
-			else if (t == typeof(Integer) && type == typeof(uint))
-			{
-				return Convert.ToUInt32((expr as Integer).Val);
-			}
-			else if (t == typeof(Integer) && type == typeof(ulong))
-			{
-				return Convert.ToUInt64((expr as Integer).Val);
-			}
-			else if (t == typeof(String))
-			{
-				return (expr as String).Val;
-			}
-			else
-			{
-				ws.AddError("Unknown expression '" + t + "' for type '" + type + "' encountered.");
-				return null;
-			}
+			if (type == typeof(bool)) { return Convert.ToBoolean(val); }
+			else if (type == typeof(char)) { return Convert.ToChar(val); }
+			else if (type == typeof(float)) { return Convert.ToSingle(val); }
+			else if (type == typeof(double)) { return Convert.ToDouble(val); }
+			else if (type == typeof(sbyte)) { return Convert.ToSByte(val); }
+			else if (type == typeof(short)) { return Convert.ToInt16(val); }
+			else if (type == typeof(int)) { return Convert.ToInt32(val); }
+			else if (type == typeof(long)) { return Convert.ToInt64(val); }
+			else if (type == typeof(byte)) { return Convert.ToByte(val); }
+			else if (type == typeof(ushort)) { return Convert.ToUInt16(val); }
+			else if (type == typeof(uint)) { return Convert.ToUInt32(val); }
+			else if (type == typeof(ulong)) { return Convert.ToUInt64(val); }
+			else if (type == typeof(string)) { return Convert.ToString(val); }
+
+			ws.AddError("Cannot convert '" + val + "' to " + type);
+			return null;
+		}
+
+		public static bool IsFloatingPointType(this Type type)
+		{
+			return type == typeof(float) || type == typeof(double);
+		}
+
+		public static bool IsIntegerType(this Type type)
+		{
+			return type == typeof(sbyte) || type == typeof(short) || type == typeof(int) || type == typeof(long) ||
+				   type == typeof(byte) || type == typeof(ushort) || type == typeof(uint) || type == typeof(ulong);
 		}
 
 		public static Type ToType(this IStatement type, WalkState ws)
@@ -132,6 +86,8 @@ namespace Minet.Compiler.AST
 				var id = type as Identifier;
 				switch (id.ToString())
 				{
+					case "any":
+						return typeof(object);
 					case "bool":
 						return typeof(bool);
 					case "char":

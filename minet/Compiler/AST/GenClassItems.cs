@@ -42,8 +42,11 @@ namespace Minet.Compiler.AST
 							prop.CreateField(c);
 							if (el != null)
 							{
-								object val = el.Expressions[i].GetLiteralVal(prop.Type, ws);
-								if (val != null) { prop.SetDefault(val); }
+								object val = el.Expressions[i].Calculate(ws);
+								if (val != null)
+								{
+									prop.SetDefault(p.SystemType.Cast(val, ws));
+								}
 								// TODO - Do something with default values for fields.
 							}
 							c.Fields.Add(prop);
