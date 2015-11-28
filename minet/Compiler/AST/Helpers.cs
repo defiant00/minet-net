@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Minet.Compiler.AST
 {
@@ -47,6 +48,34 @@ namespace Minet.Compiler.AST
 			return retVal;
 		}
 
+		public static bool CalcTypeList(this List<Variable> ps, WalkState ws)
+		{
+			Type type = null;
+			for (int i = ps.Count - 1; i >= 0; i--)
+			{
+				if (ps[i].Type == null)
+				{
+					ps[i].SystemType = type;
+				}
+				else
+				{
+					type = ps[i].Type.ToType(ws);
+					ps[i].SystemType = type;
+				}
+			}
+
+			bool retVal = true;
+			foreach (var p in ps)
+			{
+				if (p.SystemType == null)
+				{
+					ws.AddError("Type could not be determined for " + p.Name);
+					retVal = false;
+				}
+			}
+			return retVal;
+		}
+
 		public static object Cast(this Type type, object val, WalkState ws)
 		{
 			if (type == typeof(bool)) { return Convert.ToBoolean(val); }
@@ -81,7 +110,14 @@ namespace Minet.Compiler.AST
 		public static Type ToType(this IStatement type, WalkState ws)
 		{
 			var t = type.GetType();
-			if (t == typeof(Identifier))
+			if (t == typeof(Array))
+			{
+				var ar = type as Array;
+				var at = ar.Type.ToType(ws);
+				if (ar.Dimensions == 1) { return at.MakeArrayType(); }
+				return at.MakeArrayType(ar.Dimensions);
+			}
+			else if (t == typeof(Identifier))
 			{
 				var id = type as Identifier;
 				switch (id.ToString())

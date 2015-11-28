@@ -46,6 +46,7 @@
     <Compile Include="Compiler\AST\AST.cs" />
     <Compile Include="Compiler\AST\CalcTypes.cs" />
     <Compile Include="Compiler\AST\Calculate.cs" />
+    <Compile Include="Compiler\AST\Emitter.cs" />
     <Compile Include="Compiler\AST\GenClassItems.cs" />
     <Compile Include="Compiler\AST\GenTypes.cs" />
     <Compile Include="Compiler\BuildConfig.cs" />

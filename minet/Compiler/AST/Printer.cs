@@ -400,7 +400,7 @@ namespace Minet.Compiler.AST
 		{
 			Helper.PrintIndent(indent);
 			Console.WriteLine("return");
-			Vals.Print(indent + 1);
+			if (Vals != null) { Vals.Print(indent + 1); }
 		}
 	}
 

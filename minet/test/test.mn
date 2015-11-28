@@ -1,5 +1,5 @@
 ns MTest
 
 C.MinetTest
-	Main()
+	Main(args []string)
 		System.Console.WriteLine("Hello from Minet!")

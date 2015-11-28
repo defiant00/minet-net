@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 
 namespace Minet.Compiler.AST
 {
@@ -12,6 +13,7 @@ namespace Minet.Compiler.AST
 	{
 		List<Type> CalcTypes(WalkState ws);
 		object Calculate(WalkState ws);
+		void Emit(ILGenerator il, WalkState ws);
 	}
 	public interface IStatement : IGeneral { }
 
@@ -223,6 +225,7 @@ namespace Minet.Compiler.AST
 	{
 		public string Name;
 		public IStatement Type;
+		public Type SystemType;
 	}
 
 	public partial class VarSet : IStatement

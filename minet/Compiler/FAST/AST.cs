@@ -38,10 +38,9 @@ namespace Minet.Compiler.FAST
 			return cl;
 		}
 
-		public void CreateTypes()
-		{
-			foreach (var c in Classes) { c.CreateType(); }
-		}
+		public void GenFunctions(WalkState ws) { foreach (var c in Classes) { c.GenFunctions(ws); } }
+
+		public void CreateTypes() { foreach (var c in Classes) { c.CreateType(); } }
 
 		public void Save() { AssemblyBuilder.Save(FileName); }
 	}
@@ -81,6 +80,12 @@ namespace Minet.Compiler.FAST
 			var cl = new Class(asm, ns, name, pub, TypeBuilder);
 			Classes.Add(cl);
 			return cl;
+		}
+
+		public void GenFunctions(WalkState ws)
+		{
+			foreach (var c in Classes) { c.GenFunctions(ws); }
+			foreach (var f in Functions) { f.GenFunctionBody(ws); }
 		}
 
 		public void CreateType()
@@ -133,6 +138,7 @@ namespace Minet.Compiler.FAST
 	{
 		public string Name;
 		public bool Static;
+		private List<IStatement> Statements;
 		public MethodBuilder MethodBuilder;
 
 		public MethodAttributes Accessibility
@@ -140,18 +146,90 @@ namespace Minet.Compiler.FAST
 			get { return char.IsUpper(Name[0]) ? MethodAttributes.Public : MethodAttributes.Private; }
 		}
 
-		public Function(Class cl, FunctionDef func)
+		public Function(Class cl, FunctionDef func, WalkState ws)
 		{
 			Name = func.Name;
 			Static = func.Static;
-			var attrs = Accessibility;
+			Statements = func.Statements;
+			var attrs = Accessibility | MethodAttributes.HideBySig;
 			if (Static) { attrs |= MethodAttributes.Static; }
-			MethodBuilder = cl.TypeBuilder.DefineMethod(Name, attrs);
+			func.Params.CalcTypeList(ws);
 
-			// methods must have a body, so this generates a single return statement
-			// so it doesn't crash
+			var pTypes = new List<Type>();
+			foreach (var p in func.Params) { pTypes.Add(p.SystemType); }
+			Type rType = null;
+			if (func.Returns.Count > 0)
+			{
+				rType = func.Returns[0].ToType(ws);
+				for (int i = 1; i < func.Returns.Count; i++)
+				{
+					pTypes.Add(func.Returns[i].ToType(ws).MakeByRefType());
+				}
+			}
+
+			MethodBuilder = cl.TypeBuilder.DefineMethod(Name, attrs, rType, pTypes.ToArray());
+
+			int counter = 1;
+			for (int i = 0; i < func.Params.Count; i++)
+			{
+				MethodBuilder.DefineParameter(counter++, ParameterAttributes.None, func.Params[i].Name);
+			}
+			for (int i = 1; i < func.Returns.Count; i++)
+			{
+				MethodBuilder.DefineParameter(counter++, ParameterAttributes.Out, "_ret" + i);
+			}
+		}
+
+		public void GenFunctionBody(WalkState ws)
+		{
 			var il = MethodBuilder.GetILGenerator();
-			il.Emit(OpCodes.Ret);
+			foreach (var s in Statements)
+			{
+				var t = s.GetType();
+				if (t == typeof(ExprStmt))
+				{
+					var es = s as ExprStmt;
+					var el = es.Expr as ExprList;
+					if (el.Expressions.Count > 1)
+					{
+						ws.AddError("Cannot have more than a single expression as a statement.");
+					}
+					else
+					{
+						var et = el.Expressions[0].GetType();
+						if (et == typeof(FunctionCall))
+						{
+							var fn = el.Expressions[0] as FunctionCall;
+							// TODO - Function call
+						}
+						else
+						{
+							ws.AddError(et + " is not valid for a statement.");
+						}
+					}
+				}
+				else if (t == typeof(Return))
+				{
+					var r = s as Return;
+					if (r.Vals != null)
+					{
+						var el = r.Vals as ExprList;
+						for (int i = 1; i < el.Expressions.Count; i++)
+						{
+							// TODO - multiple return values
+						}
+						el.Expressions[0].Emit(il, ws);
+					}
+					il.Emit(OpCodes.Ret);
+				}
+				else
+				{
+					ws.AddError("Invalid method instruction " + t);
+				}
+			}
+
+			// If no commands have been emitted, emit a single return.
+			if (il.ILOffset == 0) { il.Emit(OpCodes.Ret); }
 		}
 	}
 }

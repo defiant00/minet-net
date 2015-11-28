@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-// https://neildanson.wordpress.com/2014/02/11/building-a-c-compiler-in-f/
-// http://www.trelford.com/blog/post/compiler.aspx
-
 namespace Minet.Compiler
 {
 	public class Compiler
@@ -37,6 +34,7 @@ namespace Minet.Compiler
 
 				if (errors.Count == 0) { foreach (var a in asts) { a.GenTypes(ws); } }
 				if (errors.Count == 0) { foreach (var a in asts) { a.GenClassItems(ws); } }
+				if (errors.Count == 0) { ws.Assembly.GenFunctions(ws); }
 				if (errors.Count == 0) { ws.Assembly.CreateTypes(); }
 				if (errors.Count == 0) { ws.Save(); }
 			}

@@ -1,5 +1,4 @@
 ﻿using Minet.Compiler.FAST;
-using System.Reflection;
 
 namespace Minet.Compiler.AST
 {
@@ -17,7 +16,7 @@ namespace Minet.Compiler.AST
 				}
 				else if (t == typeof(FunctionDef))
 				{
-					c.Functions.Add(new Function(c, s as FunctionDef));
+					c.Functions.Add(new Function(c, s as FunctionDef, ws));
 				}
 				else if (t == typeof(PropertySet))
 				{
